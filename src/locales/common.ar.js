@@ -74,7 +74,7 @@ export default {
     localDelivery: "توصيل محلي",
     calculateShipping: "حساب الشحن",
     selectCountry: "اختر الدولة",
-    postcode: "الرمز البريدي",
+    postcode: "الرمز",
     emptyCart: "سلة التسوق فارغة",
   },
 
