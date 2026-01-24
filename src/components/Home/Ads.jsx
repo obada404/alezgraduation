@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function Ads({ handler }) {
+  const { t } = useTranslation();
   return (
     <>
       <div className="w-full h-full flex fixed left-0 top-0 justify-center z-40 items-center">
@@ -23,19 +25,16 @@ export default function Ads({ handler }) {
                 <img
                   width="152"
                   height="36"
-                  src={`${
-                    import.meta.env.VITE_PUBLIC_URL
-                  }/assets/images/logo.svg`}
+                  src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`}
                   alt="logo"
                 />
               </Link>
             </div>
             <p className="md:text-[22px] text-sm text-qblack mb-2">
-              by Subscribe our Newsletter
+              {t("footer.subscribeNewsletter")}
             </p>
             <h1 className="md:text-[30px] text-xl font-bold text-qblack mb-1">
-              Get <span className="mx-1 text-[#EB5757]">20% Off</span> Discount
-              Coupon
+              {t("footer.getDiscountCoupon", { percent: 20 })}
             </h1>
             <p className="text-qgray">
               Get has been the industry's standard dummy text ever since <br />
@@ -72,14 +71,14 @@ export default function Ads({ handler }) {
                 type="email"
                 name="email"
                 className="w-full h-full focus:outline-none text-sm placeholder:text-xs placeholder:text-qblack text-qblack font-400 tracking-wider"
-                placeholder="EMAIL ADDRESS"
+                placeholder={t("footer.emailAddress")}
               />
             </div>
             <button
               type="button"
               className="w-[120px] h-full bg-qyellow text-sm font-600"
             >
-              Subscribe
+              {t("footer.subscribe")}
             </button>
           </div>
           <div className="absolute right-5 top-5">

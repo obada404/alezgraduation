@@ -28,19 +28,17 @@ export default function HeaderFive({ className, drawerAction }) {
             </svg>
           </div>
           <div>
-            <Link href="/">
+            <Link to="/">
               <img
                 width="152"
                 height="36"
-                src={`${
-                  import.meta.env.VITE_PUBLIC_URL
-                }/assets/images/logo-5.svg`}
+                src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`}
                 alt="logo"
               />
             </Link>
           </div>
           <div className="cart relative cursor-pointer">
-            <Link href="/cart">
+            <Link to="/cart">
               <span>
                 <ThinBag />
               </span>

@@ -15,6 +15,12 @@ export default {
     homeThree: "Home Three",
     homeFour: "Home Four",
     homeFive: "Home Five",
+    shop: "Shop",
+    privacy: "Privacy",
+    location: "Location",
+    login: "Login",
+    logout: "Logout",
+    signup: "Sign Up",
   },
 
   // Categories
@@ -54,12 +60,27 @@ export default {
     confirmPassword: "Confirm Password",
     alreadyHaveAccount: "Already have an account?",
     loginHere: "Login here",
+    wrongCredentials: "Wrong email or password",
+    emailPlaceholder: "Email Address",
+    passwordPlaceholder: "Password",
+    pleaseFillForm: "Please fill in all fields",
   },
 
   // Cart & Checkout
   cart: {
     yourCart: "Your Cart",
     cart: "Cart",
+    itemsInCart: "item(s) in your cart",
+    continueShopping: "Continue shopping",
+    clearCart: "Clear cart",
+    clearing: "Clearing...",
+    loading: "Loading cart...",
+    remove: "Remove",
+    size: "Size",
+    total: "Total",
+    checkout: "Checkout",
+    emptyCart: "Cart is empty",
+    browseProducts: "Browse products",
     checkout: "Checkout",
     proceedToCheckout: "Proceed to Checkout",
     continueShopping: "Continue Shopping",
@@ -216,11 +237,26 @@ export default {
     arabic: "Arabic",
     currency: "Currency",
     country: "Country",
+    welcome: "Welcome",
+    browseProducts: "Browse products powered by the backend API",
+    viewAllProducts: "View all products",
+    login: "Login",
+    products: "Products",
+    poweredByBackend: "Powered by the backend API",
+    items: "items",
+    goToCart: "Go to Cart",
+    promotion: "Promotion",
+    noActivePromotions: "No active promotions right now",
+    pleaseLogin: "Please login to see products",
+    loadingProducts: "Loading products...",
+    addToCart: "Add to cart",
+    soldOut: "Sold Out",
   },
 
   // Footer
   footer: {
     aboutUs: "About Us",
+    aboutUsDesc: "We are an online store, a group of professionals specializing in tailoring and selling graduation supplies. Because we believe that the graduation moment deserves special care, we work on tailoring gowns with high quality and elegant tailoring, and providing meticulously crafted caps and sashes that rival what is available in the most prestigious universities worldwide with professionalism and skill.",
     contactUs: "Contact Us",
     customerService: "Customer Service",
     myAccount: "My Account",
@@ -236,6 +272,26 @@ export default {
     subscribeButton: "Subscribe",
     copyright: "Copyright",
     allRightsReserved: "All Rights Reserved",
+    feature: "Feature",
+    bestProducts: "Best Products",
+    generalLinks: "General Links",
+    blog: "Blog",
+    trackingOrder: "Tracking Order",
+    becomeSeller: "Become Seller",
+    helpful: "Helpful",
+    flashSale: "Flash Sale",
+    support: "Support",
+    subscribeNewsletter: "by Subscribe our Newsletter",
+    getDiscountCoupon: "Get {{percent}}% Off Discount Coupon",
+    emailAddress: "EMAIL ADDRESS",
+    freeShipping: "Attention to Details",
+    freeShippingDesc: "Attention to the finest details from inside and out, from fabric selection to final delivery",
+    freeReturn: "Product Guarantee",
+    freeReturnDesc: "We guarantee our products until the end",
+    securePayment: "Customer Care",
+    securePaymentDesc: "Exceptional care to satisfy customers and share their joy and happiness, because we sell trust before selling fabrics",
+    onTimeDelivery: "On-Time Delivery",
+    onTimeDeliveryDesc: "Sacred commitment to deadlines and fast digital delivery",
   },
 
   // Errors
@@ -249,6 +305,16 @@ export default {
   // Breadcrumbs
   breadcrumb: {
     home: "Home",
+  },
+
+  // Location
+  location: {
+    title: "Our Location",
+    subtitle: "Jenin, Palestine",
+    addressTitle: "Address",
+    city: "City",
+    country: "Country",
+    coordinates: "Coordinates",
   },
 };
 
