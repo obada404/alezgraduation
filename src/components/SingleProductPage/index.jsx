@@ -5,8 +5,9 @@ import Layout from "../Partials/Layout";
 import { fetchProduct } from "../../api/products";
 import { addToCart } from "../../api/cart";
 import { getToken } from "../../api/client";
+import Spinner from "../Helpers/Spinner";
 
-const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`;
+const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo/jpeg`;
 
 export default function SingleProductPage() {
   const { id } = useParams();
@@ -21,6 +22,9 @@ export default function SingleProductPage() {
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
+    // Scroll to top when component mounts or id changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     const loadProduct = async () => {
       try {
         setError("");
@@ -34,7 +38,7 @@ export default function SingleProductPage() {
           setSelectedImage(data.images[0].url);
         }
       } catch (err) {
-        const errorMsg = err.message || "Failed to load product";
+        const errorMsg = err.message || "حدث خطآ،جاري المتابعة";
         if (errorMsg.includes("Unauthorized") || errorMsg.includes("401")) {
           // Allow viewing product even if unauthorized, just show error gracefully
           setError("فشل في تحميل تفاصيل المنتج");
@@ -43,6 +47,8 @@ export default function SingleProductPage() {
         }
       } finally {
         setLoading(false);
+        // Scroll to top again after loading completes
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
 
@@ -63,7 +69,11 @@ export default function SingleProductPage() {
         size: selectedSize || null,
       });
     } catch (err) {
-      setError(err.message || "Failed to add to cart");
+      let errorMsg = err.message || "حدث خطآ،جاري المتابعة";
+      if (errorMsg.includes("Insufficient") || errorMsg.includes("quantity")) {
+        errorMsg = "الكمية المتاحة غير كافية";
+      }
+      setError(errorMsg);
     } finally {
       setAdding(false);
     }
@@ -72,8 +82,8 @@ export default function SingleProductPage() {
   if (loading) {
     return (
       <Layout>
-        <div className="container-x mx-auto py-10 text-center text-qgray">
-          Loading product...
+        <div className="container-x mx-auto py-10 flex items-center justify-center">
+          <Spinner size="lg" />
         </div>
       </Layout>
     );
@@ -172,7 +182,7 @@ export default function SingleProductPage() {
                         onClick={handleSizeClick}
                         className={`px-3 py-1 border rounded ${
                           selectedSize === s.size
-                            ? "border-qyellow bg-qyellow text-qblack"
+                            ? "border-qyellow bg-qyellow text-white"
                             : "border-qgray-border text-qblack"
                         }`}
                       >
@@ -207,7 +217,7 @@ export default function SingleProductPage() {
                 <button
                   onClick={handleAddToCart}
                   disabled={adding}
-                  className="h-[44px] px-5 rounded bg-qyellow text-qblack font-semibold disabled:opacity-60"
+                  className="h-[44px] px-5 rounded bg-qyellow text-white font-semibold disabled:opacity-60"
                 >
                   {adding ? "Adding..." : "Add to cart"}
                 </button>

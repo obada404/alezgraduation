@@ -37,10 +37,10 @@ export default function Dashboard() {
               </svg>
             </span>
           </div>
-          <p className="text-xl text-white group-hover:text-qblacktext mt-5">
+          <p className="text-xl text-white group-hover:text-white mt-5">
             New Orders
           </p>
-          <span className="text-[40px] text-white group-hover:text-qblacktext font-bold leading-none mt-1 block">
+          <span className="text-[40px] text-white group-hover:text-white font-bold leading-none mt-1 block">
             656
           </span>
         </div>
@@ -61,10 +61,10 @@ export default function Dashboard() {
               </svg>
             </span>
           </div>
-          <p className="text-xl text-white group-hover:text-qblacktext mt-5">
+          <p className="text-xl text-white group-hover:text-white mt-5">
             New Orders
           </p>
-          <span className="text-[40px] text-white group-hover:text-qblacktext font-bold leading-none mt-1 block">
+          <span className="text-[40px] text-white group-hover:text-white font-bold leading-none mt-1 block">
             656
           </span>
         </div>
@@ -93,10 +93,10 @@ export default function Dashboard() {
               </svg>
             </span>
           </div>
-          <p className="text-xl text-white group-hover:text-qblacktext mt-5">
+          <p className="text-xl text-white group-hover:text-white mt-5">
             New Orders
           </p>
-          <span className="text-[40px] text-white group-hover:text-qblacktext font-bold leading-none mt-1 block">
+          <span className="text-[40px] text-white group-hover:text-white font-bold leading-none mt-1 block">
             656
           </span>
         </div>

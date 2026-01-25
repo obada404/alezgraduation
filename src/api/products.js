@@ -37,7 +37,7 @@ export const createProduct = (formData) => {
     const data = isJson ? await res.json() : null;
     
     if (!res.ok) {
-      throw new Error(data?.message || data?.error || `Request failed with status ${res.status}`);
+      throw new Error(data?.message || data?.error || "حدث خطآ،جاري المتابعة");
     }
     
     return data;
@@ -70,7 +70,7 @@ export const updateProduct = (id, formData) => {
     const data = isJson ? await res.json() : null;
     
     if (!res.ok) {
-      throw new Error(data?.message || data?.error || `Request failed with status ${res.status}`);
+      throw new Error(data?.message || data?.error || "حدث خطآ،جاري المتابعة");
     }
     
     return data;

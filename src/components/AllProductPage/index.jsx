@@ -3,9 +3,9 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Layout from "../Partials/Layout";
 import { fetchProducts } from "../../api/products";
-import { addToCart } from "../../api/cart";
-import { getToken } from "../../api/client";
 import SimpleSlider from "../Helpers/SliderCom";
+import Spinner from "../Helpers/Spinner";
+import ProductDialog from "../Helpers/ProductDialog";
 
 const priceFromProduct = (product) => {
   if (product?.sizes?.length) {
@@ -14,28 +14,17 @@ const priceFromProduct = (product) => {
   return 0;
 };
 
-const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`;
+const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo/jpeg`;
 
-function ProductCard({ product, onAdd, adding }) {
+function ProductCard({ product, onShowDetails }) {
   const { t } = useTranslation();
   const price = priceFromProduct(product);
   const imageUrl = product?.images?.[0]?.url;
   const isSoldOut = product?.soldOut || product?.isSoldOut || false;
-  const [isHovered, setIsHovered] = useState(false);
-  
-  const handleHeartClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (onAdd && !isSoldOut) {
-      onAdd(product);
-    }
-  };
   
   return (
     <div 
       className="border border-qgray-border rounded-md p-4 flex flex-col space-y-3 relative group transition-all duration-300 hover:shadow-lg hover:border-qyellow"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {isSoldOut && (
         <div className="absolute top-4 right-4 bg-qred text-white px-3 py-1 rounded text-xs font-semibold z-10">
@@ -49,28 +38,6 @@ function ProductCard({ product, onAdd, adding }) {
             alt={product?.name || product?.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
-          {isHovered && !isSoldOut && onAdd && (
-            <button
-              onClick={handleHeartClick}
-              className="absolute top-3 left-3 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:bg-red-50 hover:scale-110 z-20"
-              aria-label="Add to cart"
-            >
-              <svg
-                width="20"
-                height="18"
-                viewBox="0 0 21 18"
-                fill={adding ? "red" : "none"}
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="text-qblack transition-all duration-300"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M4.97214 0.0251923C3.71435 0.183434 2.6616 0.701674 1.7705 1.60365C0.970091 2.41068 0.489057 3.26519 0.213053 4.37683C-0.275867 6.30342 0.0789948 8.20232 1.25398 9.98649C2.00708 11.1298 2.98097 12.1781 4.76711 13.7764C5.90266 14.7931 9.36848 17.7601 9.53802 17.859C9.69574 17.954 9.75488 17.9658 10.09 17.9658C10.4252 17.9658 10.4843 17.954 10.642 17.859C10.8116 17.7601 14.2853 14.7891 15.413 13.7764C17.207 12.1702 18.173 11.1258 18.9261 9.98649C20.1011 8.20232 20.4559 6.30342 19.967 4.37683C19.691 3.26519 19.21 2.41068 18.4096 1.60365C17.6131 0.800575 16.7614 0.337719 15.6456 0.100357C15.0857 -0.0183239 14.0526 -0.0301933 13.5637 0.0805759C12.1995 0.377279 11.1546 1.06167 10.2004 2.28013L10.09 2.41859L9.98357 2.28013C9.04122 1.08541 8.01212 0.401016 6.69913 0.100357C6.30878 0.00936699 5.4098 -0.0301933 4.97214 0.0251923ZM6.28907 1.23178C7.40885 1.42958 8.37487 2.07837 9.13979 3.15046C9.26991 3.3364 9.43156 3.55793 9.49465 3.64892C9.78643 4.06035 10.3936 4.06035 10.6854 3.64892C10.7485 3.55793 10.9102 3.3364 11.0403 3.15046C12.0851 1.68673 13.5401 0.998377 15.1251 1.21596C16.8837 1.45728 18.2558 2.69156 18.7802 4.50738C19.1942 5.94342 19.0128 7.45067 18.2597 8.80759C17.6289 9.94298 16.5761 11.1337 14.7427 12.7834C13.8555 13.5786 10.1255 16.7988 10.09 16.7988C10.0506 16.7988 6.33638 13.5904 5.4374 12.7834C2.61823 10.2476 1.50633 8.66518 1.23821 6.8098C1.06472 5.61112 1.31312 4.32145 1.91639 3.30475C2.82326 1.77376 4.58968 0.935081 6.28907 1.23178Z"
-                />
-              </svg>
-            </button>
-          )}
         </div>
       </Link>
       <div className="flex-1">
@@ -82,22 +49,21 @@ function ProductCard({ product, onAdd, adding }) {
         </Link>
         <p className="text-lg font-bold text-qblack mt-1">₪ {price}</p>
       </div>
-      {onAdd && !isSoldOut ? (
+      {!isSoldOut ? (
         <button
-          onClick={() => onAdd(product)}
-          disabled={adding}
-          className="w-full h-[42px] rounded bg-qyellow text-qblack font-semibold transition-all duration-300 hover:bg-opacity-90 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+          onClick={() => onShowDetails(product)}
+          className="w-full h-[42px] rounded bg-qyellow text-white font-semibold transition-all duration-300 hover:bg-opacity-90 hover:scale-105"
         >
-          {adding ? t("common.loading") : t("common.addToCart")}
+          عرض التفاصيل
         </button>
-      ) : isSoldOut ? (
+      ) : (
         <button
           disabled
           className="w-full h-[42px] rounded bg-qgray text-white font-semibold cursor-not-allowed opacity-60"
         >
           {t("common.soldOut")}
         </button>
-      ) : null}
+      )}
     </div>
   );
 }
@@ -112,7 +78,9 @@ export default function AllProductPage({ className }) {
   const [newestProducts, setNewestProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [addingId, setAddingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Fetch all products once
   useEffect(() => {
@@ -137,7 +105,7 @@ export default function AllProductPage({ className }) {
           : allProds.slice(0, 4);
         setNewestProducts(newest);
       } catch (err) {
-        const errorMsg = err.message || "Failed to load products";
+        const errorMsg = err.message || "حدث خطآ،جاري المتابعة";
         if (errorMsg.includes("Unauthorized") || errorMsg.includes("401")) {
           // Allow viewing products even if unauthorized, just show empty or handle gracefully
           setAllProducts([]);
@@ -153,36 +121,43 @@ export default function AllProductPage({ className }) {
     loadProducts();
   }, []);
 
-  // Filter products based on categoryId
+  // Filter products based on categoryId and search query
   useEffect(() => {
+    let filtered = [...allProducts];
+    
+    // Filter by category
     if (categoryId) {
-      const filtered = allProducts.filter(
+      filtered = filtered.filter(
         (product) => product.categoryId === categoryId
       );
-      setProducts(filtered);
-    } else {
-      setProducts(allProducts);
     }
-  }, [categoryId, allProducts]);
-
-  const handleAdd = async (product) => {
-    if (!getToken()) {
-      navigate("/login");
-      return;
-    }
-    try {
-      setAddingId(product.id);
-      const size = product?.sizes?.[0]?.size || null;
-      await addToCart({
-        productId: product.id,
-        quantity: 1,
-        size,
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((product) => {
+        const title = (product.title || product.name || "").toLowerCase();
+        const description = (product.description || "").toLowerCase();
+        const categoryName = (product.category?.name || "").toLowerCase();
+        return (
+          title.includes(query) ||
+          description.includes(query) ||
+          categoryName.includes(query)
+        );
       });
-    } catch (err) {
-      setError(err.message || "Failed to add to cart");
-    } finally {
-      setAddingId(null);
     }
+    
+    setProducts(filtered);
+  }, [categoryId, allProducts, searchQuery]);
+
+  const handleShowDetails = (product) => {
+    setSelectedProduct(product);
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedProduct(null);
   };
 
   return (
@@ -195,10 +170,33 @@ export default function AllProductPage({ className }) {
               <p className="text-sm text-qgray mt-1">
               </p>
             </div>
-            <div className="space-x-3">
+            <div className="flex items-center space-x-3 space-x-reverse gap-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="بحث عن منتج..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-[40px] px-4 pr-10 border border-qgray-border rounded-md text-sm text-qblack placeholder:text-qgray focus:outline-none focus:ring-2 focus:ring-qyellow focus:border-transparent"
+                  dir="rtl"
+                />
+                <svg
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-qgray"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
               <button
                 onClick={() => navigate("/cart")}
-                className="h-[40px] px-4 rounded bg-qyellow text-qblack font-semibold"
+                className="h-[40px] px-4 rounded bg-qyellow text-white font-semibold whitespace-nowrap"
               >
                 {t("common.goToCart")}
               </button>
@@ -256,8 +254,7 @@ export default function AllProductPage({ className }) {
                     <div key={product.id} className="px-2">
                       <ProductCard
                         product={product}
-                        onAdd={handleAdd}
-                        adding={addingId === product.id}
+                        onShowDetails={handleShowDetails}
                       />
                     </div>
                   ))}
@@ -267,7 +264,9 @@ export default function AllProductPage({ className }) {
           )}
 
           {loading ? (
-            <div className="text-center py-10 text-qgray">{t("common.loadingProducts")}</div>
+            <div className="text-center py-10 flex items-center justify-center">
+              <Spinner size="lg" />
+            </div>
           ) : error ? (
             <div className="text-center py-10 text-qred">{error}</div>
           ) : (
@@ -284,8 +283,7 @@ export default function AllProductPage({ className }) {
                   <ProductCard
                     key={product.id}
                     product={product}
-                    onAdd={handleAdd}
-                    adding={addingId === product.id}
+                    onShowDetails={handleShowDetails}
                   />
                 ))}
               </div>
@@ -293,6 +291,14 @@ export default function AllProductPage({ className }) {
           )}
         </div>
       </div>
+      <ProductDialog
+        product={selectedProduct}
+        isOpen={isDialogOpen}
+        onClose={handleCloseDialog}
+        onAddToCart={() => {
+          // Optionally refresh cart count or show success message
+        }}
+      />
     </Layout>
   );
 }

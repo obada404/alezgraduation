@@ -25,8 +25,8 @@ const pwaConfig = {
     description: "Shopo",
     start_url: "/",
     display: "standalone",
-    background_color: "#3B82F6",
-    theme_color: "#3B82F6",
+    background_color: "#021838",
+    theme_color: "#021838",
     icons: [
       {
         src: "/192.png",

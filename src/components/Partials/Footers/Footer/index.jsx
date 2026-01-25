@@ -27,8 +27,14 @@ export default function Footer({ type }) {
                 <img
                   width="152"
                   height="36"
-                  src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`}
+                  src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.jpeg`}
                   alt="logo"
+                  onError={(e) => {
+                    // Fallback to logo.png if logo.jpeg fails
+                    if (e.target.src !== `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`) {
+                      e.target.src = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`;
+                    }
+                  }}
                 />
               </Link>
             )}

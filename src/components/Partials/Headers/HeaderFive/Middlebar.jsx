@@ -17,7 +17,7 @@ export default function Middlebar({ className }) {
                 <img
                   width="152"
                   height="36"
-                  src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`}
+                  src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo/jpeg`}
                   alt="logo"
                 />
               </Link>

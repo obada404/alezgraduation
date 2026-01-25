@@ -5,6 +5,7 @@ import InputCom from "../../Helpers/InputCom";
 import Layout from "../../Partials/Layout";
 import Thumbnail from "./Thumbnail";
 import { signup } from "../../../api/auth";
+import Spinner from "../../Helpers/Spinner";
 
 export default function Signup() {
   const { t } = useTranslation();
@@ -104,7 +105,7 @@ export default function Signup() {
                         disabled={loading}
                         className="black-btn mb-4 text-sm text-white w-full h-[50px] font-semibold flex justify-center items-center disabled:opacity-60"
                       >
-                        <span>{loading ? "Creating..." : t("auth.signup")}</span>
+                        {loading ? <Spinner size="sm" className="text-white" /> : <span>{t("auth.signup")}</span>}
                       </button>
                     </div>
                     <p className="text-sm text-qgraytwo font-normal text-center">

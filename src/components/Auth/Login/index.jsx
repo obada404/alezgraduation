@@ -6,6 +6,7 @@ import Layout from "../../Partials/Layout";
 import Thumbnail from "./Thumbnail";
 import { login } from "../../../api/auth";
 import { getToken } from "../../../api/client";
+import Spinner from "../../Helpers/Spinner";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -98,7 +99,7 @@ export default function Login() {
                         disabled={loading}
                         className="black-btn mb-4 text-sm text-white w-full h-[50px] font-semibold flex justify-center items-center disabled:opacity-60"
                       >
-                        <span>{loading ? "Signing in..." : t("auth.login")}</span>
+                        {loading ? <Spinner size="sm" className="text-white" /> : <span>{t("auth.login")}</span>}
                       </button>
                     </div>
                     <p className="text-sm text-qgraytwo font-normal text-center">

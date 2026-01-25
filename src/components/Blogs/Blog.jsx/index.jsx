@@ -698,28 +698,28 @@ export default function Blog() {
                   <div className="w-full h-[1px] bg-[#DCDCDC] mb-5"></div>
                   <div className="filter-items">
                     <div className="flex gap-[10px] flex-wrap">
-                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-qblack px-[14px] py-[6px] cursor-pointer mb-[5px]">
+                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-white px-[14px] py-[6px] cursor-pointer mb-[5px]">
                         Agency
                       </span>
-                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-qblack px-[14px] py-[6px] cursor-pointer mb-[5px]">
+                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-white px-[14px] py-[6px] cursor-pointer mb-[5px]">
                         Creative
                       </span>
-                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-qblack px-[14px] py-[6px] cursor-pointer mb-[5px]">
+                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-white px-[14px] py-[6px] cursor-pointer mb-[5px]">
                         Data
                       </span>
-                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-qblack px-[14px] py-[6px] cursor-pointer mb-[5px]">
+                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-white px-[14px] py-[6px] cursor-pointer mb-[5px]">
                         Technology
                       </span>
-                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-qblack px-[14px] py-[6px] cursor-pointer mb-[5px]">
+                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-white px-[14px] py-[6px] cursor-pointer mb-[5px]">
                         Development
                       </span>
-                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-qblack px-[14px] py-[6px] cursor-pointer mb-[5px]">
+                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-white px-[14px] py-[6px] cursor-pointer mb-[5px]">
                         Business
                       </span>
-                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-qblack px-[14px] py-[6px] cursor-pointer mb-[5px]">
+                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-white px-[14px] py-[6px] cursor-pointer mb-[5px]">
                         Idea
                       </span>
-                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-qblack px-[14px] py-[6px] cursor-pointer mb-[5px]">
+                      <span className="text-base bg-[#F9F3E9] hover:bg-qyellow text-[#9A9A9A] hover:text-white px-[14px] py-[6px] cursor-pointer mb-[5px]">
                         Generic
                       </span>
                     </div>

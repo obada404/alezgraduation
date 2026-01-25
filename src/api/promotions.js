@@ -4,7 +4,6 @@ import { apiGet, apiPost, apiPatch, apiDelete } from "./client";
  * Get active promotions
  */
 export const fetchActivePromotions = () => {
-  console.log("=== fetchActivePromotions called, path: /promotions/active ===");
   return apiGet("/promotions/active");
 };
 

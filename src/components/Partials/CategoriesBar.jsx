@@ -22,7 +22,7 @@ export default function CategoriesBar() {
         const data = await fetchCategories();
         setCategories(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Failed to load categories:", err);
+        // Silently handle errors
         setCategories([]);
       } finally {
         setLoading(false);
@@ -44,51 +44,39 @@ export default function CategoriesBar() {
 
   // Check scroll position and update arrow visibility
   const checkScrollPosition = () => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      const { scrollLeft, scrollWidth, clientWidth } = container;
-      
-      // Check if content is scrollable (with a small tolerance)
-      const isScrollable = scrollWidth > clientWidth + 1;
-      
-      console.log('CategoriesBar checkScrollPosition:', {
-        scrollLeft,
-        scrollWidth,
-        clientWidth,
-        isScrollable,
-        diff: scrollWidth - clientWidth
-      });
-      
-      if (isScrollable) {
-        // Calculate if we're at the start or end (with tolerance for rounding)
-        const isAtStart = scrollLeft <= 10;
-        const isAtEnd = scrollLeft >= scrollWidth - clientWidth - 10;
+    try {
+      const container = scrollContainerRef.current;
+      if (container) {
+        const { scrollLeft, scrollWidth, clientWidth } = container;
         
-        // Left arrow (on right side in RTL) shows when we can scroll left (not at start)
-        // This allows scrolling to see more content on the left
-        const shouldShowLeft = !isAtStart;
-        setShowLeftArrow(shouldShowLeft);
+        // Check if content is scrollable (with a small tolerance)
+        const isScrollable = scrollWidth > clientWidth + 1;
         
-        // Right arrow (on left side in RTL) shows when we can scroll right (back to start)
-        // Show it whenever we're not at the start, so user can scroll back to beginning
-        // Hide it only when at the start (scrollLeft === 0)
-        const shouldShowRight = !isAtStart;
-        setShowRightArrow(shouldShowRight);
-        
-        console.log('Arrow visibility:', {
-          isAtStart,
-          isAtEnd,
-          shouldShowLeft,
-          shouldShowRight
-        });
-      } else {
-        // If content is not scrollable, hide both arrows
-        setShowLeftArrow(false);
-        setShowRightArrow(false);
-        console.log('Content not scrollable, hiding arrows');
+        if (isScrollable) {
+          // Calculate if we're at the start or end (with tolerance for rounding)
+          const isAtStart = scrollLeft <= 10;
+          const isAtEnd = scrollLeft >= scrollWidth - clientWidth - 10;
+          
+          // Left arrow (on right side in RTL) shows when we can scroll left (not at start)
+          // This allows scrolling to see more content on the left
+          const shouldShowLeft = !isAtStart;
+          setShowLeftArrow(shouldShowLeft);
+          
+          // Right arrow (on left side in RTL) shows when we can scroll right (back to start)
+          // Show it whenever we're not at the start, so user can scroll back to beginning
+          // Hide it only when at the start (scrollLeft === 0)
+          const shouldShowRight = !isAtStart;
+          setShowRightArrow(shouldShowRight);
+        } else {
+          // If content is not scrollable, hide both arrows
+          setShowLeftArrow(false);
+          setShowRightArrow(false);
+        }
       }
-    } else {
-      console.log('Container not found!');
+    } catch (error) {
+      // Silently handle errors - don't show console errors
+      setShowLeftArrow(false);
+      setShowRightArrow(false);
     }
   };
 
@@ -168,7 +156,7 @@ export default function CategoriesBar() {
       {showRightArrow && (
         <button
           onClick={scrollRight}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-qyellow transition-all duration-300"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-qyellow hover:text-white transition-all duration-300"
           aria-label="Scroll right"
         >
           <svg
@@ -194,7 +182,7 @@ export default function CategoriesBar() {
       {showLeftArrow && (
         <button
           onClick={scrollLeft}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-qyellow transition-all duration-300"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-qyellow hover:text-white transition-all duration-300"
           aria-label="Scroll left"
         >
           <svg
@@ -234,8 +222,8 @@ export default function CategoriesBar() {
             to="/products"
             className={`px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-all duration-300 flex-shrink-0 ${
               !selectedCategory
-                ? "bg-qyellow text-qblack"
-                : "bg-gray-100 text-qblack hover:bg-qyellow hover:text-qblack"
+                ? "bg-qyellow text-white"
+                : "bg-gray-100 text-qblack hover:bg-qyellow hover:text-white"
             }`}
           >
             {t("nav.allCategories")}
@@ -248,8 +236,8 @@ export default function CategoriesBar() {
               to={`/products?category=${category.id || category.name}`}
               className={`px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-all duration-300 flex-shrink-0 ${
                 selectedCategory?.id === category.id || selectedCategory?.name === category.name
-                  ? "bg-qyellow text-qblack"
-                  : "bg-gray-100 text-qblack hover:bg-qyellow hover:text-qblack"
+                  ? "bg-qyellow text-white"
+                  : "bg-gray-100 text-qblack hover:bg-qyellow hover:text-white"
               }`}
             >
               {category.name}

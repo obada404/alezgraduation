@@ -12,8 +12,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // You can log the error to an error reporting service here
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    // Silently handle errors - don't log to console
   }
 
   render() {
@@ -41,17 +40,14 @@ class ErrorBoundary extends React.Component {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              حدث خطأ ما، جاري المعالجة
+              حدث خطآ،جاري المتابعة
             </h1>
-            <p className="text-gray-600 mb-4">
-              نعتذر عن الإزعاج. حدث خطأ غير متوقع.
-            </p>
             <button
               onClick={() => {
                 this.setState({ hasError: false });
                 window.location.reload();
               }}
-              className="px-6 py-2 bg-qyellow text-qblack rounded hover:bg-opacity-90 transition-colors"
+              className="px-6 py-2 bg-qyellow text-white rounded hover:bg-opacity-90 transition-colors"
             >
               تحديث الصفحة
             </button>

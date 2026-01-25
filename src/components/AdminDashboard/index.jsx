@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import Layout from "../Partials/Layout";
 import { getToken } from "../../api/client";
 import { fetchProducts, deleteProduct, createProduct, updateProduct } from "../../api/products";
@@ -12,11 +13,13 @@ import { fetchAllUsers } from "../../api/users";
 import { fetchAllOrders, fetchOrderById, createOrderFromCart } from "../../api/orders";
 import { fetchAllCarts } from "../../api/cart";
 import { fetchAboutUs, updateAboutUs } from "../../api/appConfig";
+import Spinner from "../Helpers/Spinner";
 
-const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`;
+const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo/jpeg`;
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -80,7 +83,6 @@ export default function AdminDashboard() {
     categoryId: "",
     sizes: [{ size: "", price: 0 }],
     images: [{ file: null, url: "", alt: "", order: 1 }],
-    colors: [{ hex: "#000000", name: "" }],
   });
   
   // Image upload state
@@ -102,7 +104,7 @@ export default function AdminDashboard() {
         const data = await fetchCategories();
         setCategories(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Failed to load categories:", err);
+        // Silently handle errors
       }
     };
     loadCategories();
@@ -120,7 +122,7 @@ export default function AdminDashboard() {
       setAboutUsContent(content);
     } catch (err) {
       setError(err.message || "فشل في تحميل محتوى من نحن");
-      console.error("Failed to load About Us:", err);
+      // Silently handle errors
     } finally {
       setAboutUsLoading(false);
     }
@@ -229,24 +231,12 @@ export default function AdminDashboard() {
         }));
       formData.append("sizes", JSON.stringify(validSizes));
 
-      // Add colors as JSON string (backend expects {color: "..."} format)
-      const validColors = productForm.colors
-        .filter(color => color.hex && color.hex.trim() !== "")
-        .map(color => ({
-          color: color.name || color.hex // Use name if available, otherwise use hex
-        }));
-      formData.append("colors", JSON.stringify(validColors));
-
       // Add images as files - backend expects "images" field
       validImages.forEach((img) => {
         formData.append("images", img.file);
       });
 
-      // Debug: Log what we're sending
-      console.log("FormData entries:");
-      for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ', pair[1]);
-      }
+      // FormData ready for submission
 
       // Use the new API functions for products
       let response;
@@ -350,7 +340,6 @@ export default function AdminDashboard() {
       categoryId: product.categoryId || "",
       sizes: product.sizes?.length > 0 ? product.sizes.map(s => ({ size: s.size, price: s.price })) : [{ size: "", price: 0 }],
       images: product.images?.length > 0 ? product.images.map(img => ({ file: null, url: img.url, alt: img.alt || "", order: img.order || 1 })) : [{ file: null, url: "", alt: "", order: 1 }],
-      colors: product.colors?.length > 0 ? product.colors.map(c => typeof c === 'string' ? { hex: c, name: "" } : { hex: c.hex || "#000000", name: c.name || "" }) : [{ hex: "#000000", name: "" }],
     });
     setShowProductForm(true);
   };
@@ -380,7 +369,6 @@ export default function AdminDashboard() {
       categoryId: "",
       sizes: [{ size: "", price: 0 }],
       images: [{ file: null, url: "", alt: "", order: 1 }],
-      colors: [{ hex: "#000000", name: "" }],
     });
   };
 
@@ -468,25 +456,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const addColorField = () => {
-    setProductForm({
-      ...productForm,
-      colors: [...productForm.colors, { hex: "#000000", name: "" }],
-    });
-  };
-
-  const removeColorField = (index) => {
-    setProductForm({
-      ...productForm,
-      colors: productForm.colors.filter((_, i) => i !== index),
-    });
-  };
-
-  const updateColorField = (index, field, value) => {
-    const newColors = [...productForm.colors];
-    newColors[index] = { ...newColors[index], [field]: value };
-    setProductForm({ ...productForm, colors: newColors });
-  };
 
   const isLoggedIn = !!getToken();
 
@@ -684,7 +653,7 @@ export default function AdminDashboard() {
                   resetProductForm();
                   setShowProductForm(true);
                 }}
-                className="px-4 py-2 bg-qyellow text-qblack rounded-md font-semibold hover:bg-opacity-90 transition-colors"
+                className="px-4 py-2 bg-qyellow text-white rounded-md font-semibold hover:bg-opacity-90 transition-colors"
               >
                 + إضافة منتج جديد
               </button>
@@ -754,12 +723,20 @@ export default function AdminDashboard() {
                         الكمية (Quantity)
                       </label>
                       <input
-                        type="number"
-                        value={productForm.quantity}
-                        onChange={(e) => setProductForm({ ...productForm, quantity: Number(e.target.value) })}
-                        className="w-full border border-qgray-border rounded-md px-3 py-2"
-                        min="0"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={productForm.quantity === 0 ? "" : productForm.quantity}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || /^\d+$/.test(value)) {
+                            setProductForm({ ...productForm, quantity: value === "" ? 0 : Number(value) });
+                          }
+                        }}
+                        className="w-full border border-qgray-border rounded-md px-3 py-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                        placeholder="0"
                         required
+                        style={{ WebkitAppearance: 'none', MozAppearance: 'textfield', appearance: 'none' }}
                       />
                     </div>
                     <div>
@@ -816,47 +793,6 @@ export default function AdminDashboard() {
                           <button
                             type="button"
                             onClick={() => removeSizeField(index)}
-                            className="px-3 py-2 bg-red-100 text-red-800 rounded-md hover:bg-red-200"
-                          >
-                            حذف
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Colors */}
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="block text-sm font-medium text-qblack">الألوان</label>
-                      <button
-                        type="button"
-                        onClick={addColorField}
-                        className="text-sm text-qyellow hover:underline"
-                      >
-                        + إضافة لون
-                      </button>
-                    </div>
-                    {productForm.colors.map((color, index) => (
-                      <div key={index} className="flex gap-2 mb-2">
-                        <input
-                          type="color"
-                          value={color.hex || "#000000"}
-                          onChange={(e) => updateColorField(index, "hex", e.target.value)}
-                          className="w-16 h-10 border border-qgray-border rounded-md cursor-pointer"
-                          title="اختر اللون"
-                        />
-                        <input
-                          type="text"
-                          placeholder="اسم اللون (اختياري)"
-                          value={color.name || ""}
-                          onChange={(e) => updateColorField(index, "name", e.target.value)}
-                          className="flex-1 border border-qgray-border rounded-md px-3 py-2"
-                        />
-                        {productForm.colors.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeColorField(index)}
                             className="px-3 py-2 bg-red-100 text-red-800 rounded-md hover:bg-red-200"
                           >
                             حذف
@@ -963,9 +899,9 @@ export default function AdminDashboard() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-2 bg-qyellow text-qblack rounded-md font-semibold hover:bg-opacity-90 transition-colors disabled:opacity-50"
+                      className="px-6 py-2 bg-qyellow text-white rounded-md font-semibold hover:bg-opacity-90 transition-colors disabled:opacity-50"
                     >
-                      {loading ? "جاري الحفظ..." : editingProduct ? "تحديث" : "إضافة"}
+                      {loading ? <Spinner size="sm" className="text-white" /> : (editingProduct ? "تحديث" : "إضافة")}
                     </button>
                     <button
                       type="button"
@@ -984,7 +920,9 @@ export default function AdminDashboard() {
             )}
 
             {loading && !showProductForm ? (
-              <div className="text-center py-10 text-qgray">جاري التحميل...</div>
+              <div className="text-center py-10 flex items-center justify-center">
+                <Spinner size="lg" />
+              </div>
             ) : (
               <div className="bg-white border border-qgray-border rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
@@ -1064,7 +1002,7 @@ export default function AdminDashboard() {
                   resetCategoryForm();
                   setShowCategoryForm(true);
                 }}
-                className="px-4 py-2 bg-qyellow text-qblack rounded-md font-semibold hover:bg-opacity-90 transition-colors"
+                className="px-4 py-2 bg-qyellow text-white rounded-md font-semibold hover:bg-opacity-90 transition-colors"
               >
                 + إضافة فئة جديدة
               </button>
@@ -1092,9 +1030,9 @@ export default function AdminDashboard() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-2 bg-qyellow text-qblack rounded-md font-semibold hover:bg-opacity-90 transition-colors disabled:opacity-50"
+                      className="px-6 py-2 bg-qyellow text-white rounded-md font-semibold hover:bg-opacity-90 transition-colors disabled:opacity-50"
                     >
-                      {loading ? "جاري الحفظ..." : editingCategory ? "تحديث" : "إضافة"}
+                      {loading ? <Spinner size="sm" className="text-white" /> : (editingCategory ? "تحديث" : "إضافة")}
                     </button>
                     <button
                       type="button"
@@ -1113,7 +1051,9 @@ export default function AdminDashboard() {
             )}
 
             {loading && !showCategoryForm ? (
-              <div className="text-center py-10 text-qgray">جاري التحميل...</div>
+              <div className="text-center py-10 flex items-center justify-center">
+                <Spinner size="lg" />
+              </div>
             ) : (
               <div className="bg-white border border-qgray-border rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
@@ -1171,7 +1111,9 @@ export default function AdminDashboard() {
           <div>
             <h2 className="text-xl font-semibold text-qblack mb-4">الإحصائيات</h2>
             {loading ? (
-              <div className="text-center py-10 text-qgray">جاري التحميل...</div>
+              <div className="text-center py-10 flex items-center justify-center">
+                <Spinner size="lg" />
+              </div>
             ) : dashboardStats ? (
               <div className="space-y-6">
                 {(() => {
@@ -1322,7 +1264,7 @@ export default function AdminDashboard() {
                   });
                   setShowPromotionForm(true);
                 }}
-                className="px-4 py-2 bg-qyellow text-qblack rounded-md font-semibold hover:bg-opacity-90 transition-colors"
+                className="px-4 py-2 bg-qyellow text-white rounded-md font-semibold hover:bg-opacity-90 transition-colors"
               >
                 + إضافة عرض ترويجي
               </button>
@@ -1408,9 +1350,9 @@ export default function AdminDashboard() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-2 bg-qyellow text-qblack rounded-md font-semibold hover:bg-opacity-90 transition-colors disabled:opacity-50"
+                      className="px-6 py-2 bg-qyellow text-white rounded-md font-semibold hover:bg-opacity-90 transition-colors disabled:opacity-50"
                     >
-                      {loading ? "جاري الحفظ..." : editingPromotion ? "تحديث" : "إضافة"}
+                      {loading ? <Spinner size="sm" className="text-white" /> : (editingPromotion ? "تحديث" : "إضافة")}
                     </button>
                     <button
                       type="button"
@@ -1428,7 +1370,9 @@ export default function AdminDashboard() {
             )}
 
             {loading && !showPromotionForm ? (
-              <div className="text-center py-10 text-qgray">جاري التحميل...</div>
+              <div className="text-center py-10 flex items-center justify-center">
+                <Spinner size="lg" />
+              </div>
             ) : (
               <div className="bg-white border border-qgray-border rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
@@ -1531,7 +1475,7 @@ export default function AdminDashboard() {
                   });
                   setShowNewsForm(true);
                 }}
-                className="px-4 py-2 bg-qyellow text-qblack rounded-md font-semibold hover:bg-opacity-90 transition-colors"
+                className="px-4 py-2 bg-qyellow text-white rounded-md font-semibold hover:bg-opacity-90 transition-colors"
               >
                 + إضافة خبر جديد
               </button>
@@ -1616,9 +1560,9 @@ export default function AdminDashboard() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-2 bg-qyellow text-qblack rounded-md font-semibold hover:bg-opacity-90 transition-colors disabled:opacity-50"
+                      className="px-6 py-2 bg-qyellow text-white rounded-md font-semibold hover:bg-opacity-90 transition-colors disabled:opacity-50"
                     >
-                      {loading ? "جاري الحفظ..." : editingNews ? "تحديث" : "إضافة"}
+                      {loading ? <Spinner size="sm" className="text-white" /> : (editingNews ? "تحديث" : "إضافة")}
                     </button>
                     <button
                       type="button"
@@ -1636,7 +1580,9 @@ export default function AdminDashboard() {
             )}
 
             {loading && !showNewsForm ? (
-              <div className="text-center py-10 text-qgray">جاري التحميل...</div>
+              <div className="text-center py-10 flex items-center justify-center">
+                <Spinner size="lg" />
+              </div>
             ) : (
               <div className="bg-white border border-qgray-border rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
@@ -1727,7 +1673,9 @@ export default function AdminDashboard() {
           <div>
             <h2 className="text-xl font-semibold text-qblack mb-4">المستخدمون</h2>
             {loading ? (
-              <div className="text-center py-10 text-qgray">جاري التحميل...</div>
+              <div className="text-center py-10 flex items-center justify-center">
+                <Spinner size="lg" />
+              </div>
             ) : (
               <div className="bg-white border border-qgray-border rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
@@ -1770,7 +1718,9 @@ export default function AdminDashboard() {
           <div>
             <h2 className="text-xl font-semibold text-qblack mb-4">الطلبات</h2>
             {loading ? (
-              <div className="text-center py-10 text-qgray">جاري التحميل...</div>
+              <div className="text-center py-10 flex items-center justify-center">
+                <Spinner size="lg" />
+              </div>
             ) : (
               <div className="bg-white border border-qgray-border rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
@@ -1798,13 +1748,8 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-4 py-3">
                               <button
-                                onClick={async () => {
-                                  try {
-                                    const orderData = await fetchOrderById(order.id);
-                                    alert(`تفاصيل الطلب: ${JSON.stringify(orderData, null, 2)}`);
-                                  } catch (err) {
-                                    setError(err.message || "فشل في تحميل تفاصيل الطلب");
-                                  }
+                                onClick={() => {
+                                  navigate(`/admin/order/${order.id}`);
                                 }}
                                 className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-blue-200"
                               >
@@ -1843,9 +1788,9 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={loading || aboutUsLoading}
-                  className="px-6 py-2 bg-qyellow text-qblack rounded-md font-semibold hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2 bg-qyellow text-white rounded-md font-semibold hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? "جاري الحفظ..." : "حفظ التغييرات"}
+                  {loading ? <Spinner size="sm" className="text-white" /> : "حفظ التغييرات"}
                 </button>
                 <button
                   type="button"
@@ -1853,7 +1798,7 @@ export default function AdminDashboard() {
                   disabled={aboutUsLoading}
                   className="px-6 py-2 bg-gray-200 text-qblack rounded-md font-semibold hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {aboutUsLoading ? "جاري التحميل..." : "إعادة التحميل"}
+                  {aboutUsLoading ? <Spinner size="sm" className="text-white" /> : "إعادة التحميل"}
                 </button>
               </div>
             </form>
@@ -1865,7 +1810,9 @@ export default function AdminDashboard() {
           <div>
             <h2 className="text-xl font-semibold text-qblack mb-4">السلات</h2>
             {loading ? (
-              <div className="text-center py-10 text-qgray">جاري التحميل...</div>
+              <div className="text-center py-10 flex items-center justify-center">
+                <Spinner size="lg" />
+              </div>
             ) : (
               <div className="bg-white border border-qgray-border rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
@@ -1889,14 +1836,8 @@ export default function AdminDashboard() {
                             <td className="px-4 py-3 text-sm text-qblack">{cart.items?.length || 0}</td>
                             <td className="px-4 py-3">
                               <button
-                                onClick={async () => {
-                                  try {
-                                    const { fetchCartById } = await import("../../api/cart");
-                                    const cartData = await fetchCartById(cart.id);
-                                    alert(`تفاصيل السلة: ${JSON.stringify(cartData, null, 2)}`);
-                                  } catch (err) {
-                                    setError(err.message || "فشل في تحميل تفاصيل السلة");
-                                  }
+                                onClick={() => {
+                                  navigate(`/admin/cart/${cart.id}`);
                                 }}
                                 className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-blue-200"
                               >

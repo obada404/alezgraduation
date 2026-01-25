@@ -1,8 +1,50 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
+// Helper function to decode JWT token and check expiration
+const isTokenExpired = (token) => {
+  if (!token) return true;
+  
+  try {
+    // JWT tokens have 3 parts separated by dots: header.payload.signature
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    
+    // Decode the payload (second part)
+    const payload = JSON.parse(atob(parts[1]));
+    
+    // Check if token has expiration (exp field)
+    if (payload.exp) {
+      // exp is in seconds, Date.now() is in milliseconds
+      const expirationTime = payload.exp * 1000;
+      const currentTime = Date.now();
+      
+      // Token is expired if current time is past expiration time
+      return currentTime >= expirationTime;
+    }
+    
+    // If no expiration field, assume token is valid (for backward compatibility)
+    return false;
+  } catch (err) {
+    // If we can't decode the token, consider it invalid
+    return true;
+  }
+};
+
 export const getToken = () => {
   try {
-    return localStorage.getItem("auth_token");
+    const token = localStorage.getItem("auth_token");
+    
+    // Check if token exists and is not expired
+    if (token && !isTokenExpired(token)) {
+      return token;
+    }
+    
+    // If token is expired or invalid, remove it
+    if (token) {
+      clearToken();
+    }
+    
+    return null;
   } catch (err) {
     return null;
   }
@@ -67,15 +109,12 @@ export async function apiRequest(path, { method = "GET", body, headers } = {}) {
   }
 
   const fullUrl = `${API_BASE_URL}${path}`;
-  console.log(`=== apiRequest: ${method} ${fullUrl} ===`);
   
   const res = await fetch(fullUrl, {
     method,
     headers: buildHeaders(headers),
     body: body ? JSON.stringify(body) : undefined,
   });
-  
-  console.log(`=== apiRequest response: ${res.status} ${res.statusText} for ${path} ===`);
 
   const contentType = res.headers.get("content-type");
   const isJson = contentType && contentType.includes("application/json");
@@ -85,12 +124,28 @@ export async function apiRequest(path, { method = "GET", body, headers } = {}) {
     let message =
       data?.message ||
       data?.error ||
-      `Request failed with status ${res.status}`;
+      "حدث خطآ،جاري المتابعة";
+    
+    // If we get 401 Unauthorized, the token is invalid/expired - clear it
+    if (res.status === 401 && !path.includes("/auth/login")) {
+      clearToken();
+      message = "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى";
+    }
     
     // Translate common error messages to Arabic
     // For login endpoint, don't translate 401 - let the component handle it
     if ((message.includes("Unauthorized") || res.status === 401) && !path.includes("/auth/login")) {
       message = "يجب تسجيل الدخول للمتابعة";
+    }
+    
+    // Translate "Insufficient product quantity" error
+    if (message.includes("Insufficient product quantity") || message.includes("insufficient") || message.includes("quantity")) {
+      message = "الكمية المتاحة غير كافية";
+    }
+    
+    // Translate other common backend errors to Arabic
+    if (message.includes("Bad Request") || message.includes("bad request")) {
+      message = "حدث خطآ،جاري المتابعة";
     }
     
     const error = new Error(message);
@@ -102,7 +157,6 @@ export async function apiRequest(path, { method = "GET", body, headers } = {}) {
 }
 
 export const apiGet = (path) => {
-  console.log("=== apiGet called with path:", path, "Full URL:", `${API_BASE_URL}${path}`);
   return apiRequest(path, { method: "GET" });
 };
 export const apiPost = (path, body) =>

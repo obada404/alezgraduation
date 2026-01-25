@@ -75,7 +75,7 @@ export default function HeaderOne({ className, drawerAction, type = 1, showNewsB
             <Link to="/">
               <img
                 className="w-24 sm:w-32 md:w-36 h-auto"
-                src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`}
+                src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.jpeg`}
                 alt="logo"
               />
             </Link>
@@ -87,7 +87,7 @@ export default function HeaderOne({ className, drawerAction, type = 1, showNewsB
                 {cartItemsCount > 0 && (
                   <span
                     className={`min-w-[18px] h-[18px] px-1 rounded-full absolute top-0 left-full -translate-x-1/2 -translate-y-1/2 flex justify-center items-center text-[9px] font-bold leading-none whitespace-nowrap z-10 ${
-                      type === 3 ? "bg-qh3-blue text-white" : "bg-qyellow text-qblack"
+                      type === 3 ? "bg-qh3-blue text-white" : "bg-white text-qyellow"
                     }`}
                   >
                     {cartItemsCount > 99 ? "99+" : cartItemsCount}

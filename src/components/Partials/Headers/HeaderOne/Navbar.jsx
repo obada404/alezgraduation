@@ -3,6 +3,10 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ThinBag from "../../../Helpers/icons/ThinBag";
 import ThinPeople from "../../../Helpers/icons/ThinPeople";
+import Facebook from "../../../Helpers/icons/Facebook";
+import Instagram from "../../../Helpers/icons/Instagram";
+import TikTok from "../../../Helpers/icons/TikTok";
+import WhatsApp from "../../../Helpers/icons/WhatsApp";
 import { getToken, clearToken, getIsAdmin } from "../../../../api/client";
 import { fetchCart } from "../../../../api/cart";
 
@@ -18,7 +22,8 @@ export default function Navbar({ className, type }) {
   // Check if user is logged in and update on navigation
   useEffect(() => {
     const checkLogin = () => {
-      setIsLoggedIn(!!getToken());
+      const token = getToken();
+      setIsLoggedIn(!!token);
       setIsAdmin(getIsAdmin());
     };
     checkLogin();
@@ -30,7 +35,8 @@ export default function Navbar({ className, type }) {
   // Fetch cart items count - only when location changes, not on interval
   useEffect(() => {
     const loadCartCount = async () => {
-      if (getToken()) {
+      const token = getToken();
+      if (token) {
         try {
           const cartData = await fetchCart();
           if (cartData && cartData.items) {
@@ -39,11 +45,19 @@ export default function Navbar({ className, type }) {
           } else {
             setCartItemsCount(0);
           }
+          // If API call succeeds, user is logged in
+          setIsLoggedIn(true);
         } catch (err) {
-          // If error (e.g., unauthorized), set count to 0
+          // If error is 401 (Unauthorized), token is invalid or expired
+          if (err.message && (err.message.includes("401") || err.message.includes("Unauthorized"))) {
+            clearToken();
+            setIsLoggedIn(false);
+            setIsAdmin(false);
+          }
           setCartItemsCount(0);
         }
       } else {
+        setIsLoggedIn(false);
         setCartItemsCount(0);
       }
     };
@@ -71,97 +85,124 @@ export default function Navbar({ className, type }) {
       <div className="container-x mx-auto h-full">
         <div className="w-full h-full relative">
           <div className="w-full h-full flex justify-between items-center">
-            <div className="category-and-nav flex xl:space-x-7 space-x-3 items-center">
-              <div className="logo">
-                <Link to="/">
+            <div className="category-and-nav flex xl:space-x-7 space-x-3 items-center flex-1 min-w-0">
+              <div className="logo flex-shrink-0 h-full flex items-center">
+                <Link to="/" className="flex items-center h-full">
                   <img
-                    width="100"
-                    height="90"
-                    src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`}
+                    src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.jpeg`}
                     alt="logo"
-                    className="object-contain"
+                    className="object-contain h-full max-h-[90px] w-auto max-w-[120px]"
+                    onError={(e) => {
+                      // Fallback to logo.png if logo.jpeg fails
+                      if (e.target.src !== `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`) {
+                        e.target.src = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`;
+                      }
+                    }}
                   />
                 </Link>
               </div>
-              <div className="nav">
+              <div className="nav flex-shrink-0">
                 <ul className="nav-wrapper flex xl:space-x-10 space-x-5 items-center">
                   <li>
                     <Link
                       to="/"
-                      className={`text-sm font-600 ml-9 transition-all duration-300 relative group px-1 py-2 rounded-md ${
-                        'hover:bg-white' 
-                      }`}
+                      className={`text-sm font-600 ml-9 transition-all duration-300 relative group px-1 py-2 rounded-md text-white hover:bg-white/20`}
                     >
                       {t("nav.home")}
-                      <span className="absolute inset-0 bg-qyellow opacity-0 group-hover:opacity-10 rounded-md transition-opacity duration-300"></span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       to="/products"
-                      className={`text-sm font-600 ml-4 transition-all duration-300 relative group px-1 py-2 rounded-md ${
-                        'hover:bg-white' 
-                      }`}
+                      className={`text-sm font-600 ml-4 transition-all duration-300 relative group px-1 py-2 rounded-md text-white hover:bg-white/20`}
                     >
                       منتجاتنا
-                      <span className="absolute inset-0 bg-qyellow opacity-0 group-hover:opacity-10 rounded-md transition-opacity duration-300"></span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       to="/about"
-                      className={`text-sm font-600 transition-all duration-300 relative group px-1 py-2 rounded-md ${
-'hover:bg-white'                       }`}
+                      className={`text-sm font-600 transition-all duration-300 relative group px-1 py-2 rounded-md text-white hover:bg-white/20`}
                     >
                       {t("nav.about")}
-                      <span className="absolute inset-0 bg-qyellow opacity-0 group-hover:opacity-10 rounded-md transition-opacity duration-300"></span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       to="/privacy-policy"
-                      className={`text-sm font-600 transition-all duration-300 relative group px-1 py-2 rounded-md ${
-'hover:bg-white'                       }`}
+                      className={`text-sm font-600 transition-all duration-300 relative group px-1 py-2 rounded-md text-white hover:bg-white/20`}
                     >
                       {t("nav.privacy")}
-                      <span className="absolute inset-0 bg-qyellow opacity-0 group-hover:opacity-10 rounded-md transition-opacity duration-300"></span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       to="/location"
-                      className={`text-sm font-600 transition-all duration-300 relative group px-1 py-2 rounded-md ${
-'hover:bg-white'                       }`}
+                      className={`text-sm font-600 transition-all duration-300 relative group px-1 py-2 rounded-md text-white hover:bg-white/20`}
                     >
                       {t("nav.location")}
-                      <span className="absolute inset-0 bg-qyellow opacity-0 group-hover:opacity-10 rounded-md transition-opacity duration-300"></span>
                     </Link>
                   </li>
                   {isAdmin && (
                     <li>
                       <Link
                         to="/admin-dashboard"
-                        className={`text-sm font-600 transition-all duration-300 relative group px-1 py-1 rounded-md ${
-'hover:bg-white'                       }`}
+                        className={`text-sm font-600 transition-all duration-300 relative group px-1 py-1 rounded-md text-white hover:bg-white/20`}
                       >
                         لوحة التحكم
-                        <span className="absolute inset-0 bg-qyellow opacity-0 group-hover:opacity-10 rounded-md transition-opacity duration-300"></span>
                       </Link>
                     </li>
                   )}
                 </ul>
               </div>
             </div>
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4 rtl:space-x-reverse">
+              {/* Social Media Icons */}
+              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                <a
+                  href="https://www.facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 text-white bg-gray-500/30 hover:bg-white/20"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="w-4 h-4 fill-current" />
+                </a>
+                <a
+                  href="https://www.instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 text-white bg-gray-500/30 hover:bg-white/20"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-4 h-4 fill-current" />
+                </a>
+                <a
+                  href="https://www.tiktok.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 text-white bg-gray-500/30 hover:bg-white/20"
+                  aria-label="TikTok"
+                >
+                  <TikTok className="w-4 h-4 fill-current" />
+                </a>
+                <a
+                  href="https://wa.me/970569027059"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 text-white bg-gray-500/30 hover:bg-white/20"
+                  aria-label="WhatsApp"
+                >
+                  <WhatsApp className="w-4 h-4 fill-current" />
+                </a>
+              </div>
               <div className="cart relative cursor-pointer flex items-center">
-                <Link to="/cart" className="flex items-center ml-5 relative">
-                  <span className={`flex items-center relative ${type === 3 ? "text-white" : "text-qblacktext"}`}>
-                    <ThinBag />
+                <Link to="/cart" className="flex items-center  mr-4 relative">
+                  <span className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-500/30 text-white relative">
+                    <ThinBag className="text-white fill-current" />
                     {cartItemsCount > 0 && (
                       <span
-                        className={`min-w-[18px] h-[18px] px-1 rounded-full absolute top-0 left-full -translate-x-1/2 -translate-y-1/2 flex justify-center items-center text-[9px] font-bold leading-none whitespace-nowrap z-10 ${
-                          type === 3 ? "bg-qh3-blue text-white" : "bg-qyellow text-qblack"
-                        }`}
+                        className="min-w-[18px] h-[18px] px-1 rounded-full absolute top-0 left-full -translate-x-1/2 -translate-y-1/2 flex justify-center items-center text-[9px] font-bold leading-none whitespace-nowrap z-10 bg-white text-qyellow"
                       >
                         {cartItemsCount > 99 ? "99+" : cartItemsCount}
                       </span>
@@ -172,10 +213,10 @@ export default function Navbar({ className, type }) {
               <div className="account relative flex items-center">
                 <button
                   onClick={() => setAccountDropdown(!accountDropdown)}
-                  className={`flex items-center ${type === 3 ? "text-white" : "text-qblacktext"}`}
+                  className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-500/30 text-white transition-all duration-300 hover:bg-white/20"
                   type="button"
                 >
-                  <ThinPeople />
+                  <ThinPeople className="text-white fill-current" />
                 </button>
                 {accountDropdown && (
                   <>
@@ -189,7 +230,7 @@ export default function Navbar({ className, type }) {
                           <li>
                             <button
                               onClick={handleLogout}
-                              className="w-full text-right px-4 py-2 text-sm text-qblack hover:bg-qyellow transition-colors"
+                              className="w-full text-right px-4 py-2 text-sm text-qblack hover:bg-qyellow hover:text-white transition-colors"
                             >
                               {t("nav.logout")}
                             </button>
@@ -199,7 +240,7 @@ export default function Navbar({ className, type }) {
                             <Link
                               to="/login"
                               onClick={() => setAccountDropdown(false)}
-                              className="block w-full text-right px-4 py-2 text-sm text-qblack hover:bg-qyellow transition-colors"
+                              className="block w-full text-right px-4 py-2 text-sm text-qblack hover:bg-qyellow hover:text-white transition-colors"
                             >
                               {t("nav.login")}
                             </Link>
