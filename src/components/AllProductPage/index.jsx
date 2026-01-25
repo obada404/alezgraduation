@@ -99,10 +99,10 @@ export default function AllProductPage({ className }) {
           return dateB - dateA; // Descending order (newest first)
         });
         
-        // Get last 4 newest products, or first 4 if no dates available
-        const newest = sortedByDate.length > 0 
-          ? sortedByDate.slice(0, 4) 
-          : allProds.slice(0, 4);
+                // Get last 3 newest products, or first 3 if no dates available
+                const newest = sortedByDate.length > 0 
+                  ? sortedByDate.slice(0, 3) 
+                  : allProds.slice(0, 3);
         setNewestProducts(newest);
       } catch (err) {
         const errorMsg = err.message || "حدث خطآ،جاري المتابعة";
@@ -213,15 +213,15 @@ export default function AllProductPage({ className }) {
                 <SimpleSlider
                   settings={{
                     dots: false,
-                    infinite: newestProducts.length >= 4,
+                    infinite: newestProducts.length >= 3,
                     speed: 500,
-                    slidesToShow: Math.min(4, newestProducts.length),
+                    slidesToShow: Math.min(3, newestProducts.length),
                     slidesToScroll: 1,
                     autoplay: newestProducts.length > 1,
                     autoplaySpeed: 3000,
                     pauseOnHover: true,
                     rtl: true,
-                    arrows: newestProducts.length > 4,
+                    arrows: newestProducts.length > 3,
                     responsive: [
                       {
                         breakpoint: 1024,
@@ -260,6 +260,8 @@ export default function AllProductPage({ className }) {
                   ))}
                 </SimpleSlider>
               </div>
+              {/* Line after Newest Products section */}
+              <div className="w-full border-t border-qgray-border mt-10 mb-6"></div>
             </div>
           )}
 

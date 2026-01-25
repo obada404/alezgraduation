@@ -91,7 +91,8 @@ export default function Navbar({ className, type }) {
                   <img
                     src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.jpeg`}
                     alt="logo"
-                    className="object-contain h-full max-h-[90px] w-auto max-w-[120px]"
+                    className="object-contain h-full max-h-[90px] w-auto max-w-[120px] sm:max-w-[100px] md:max-w-[120px]"
+                    style={{ maxWidth: 'clamp(80px, 20vw, 120px)' }}
                     onError={(e) => {
                       // Fallback to logo.png if logo.jpeg fails
                       if (e.target.src !== `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`) {

@@ -54,8 +54,8 @@ export default function HeaderOne({ className, drawerAction, type = 1, showNewsB
         className=" quomodo-shop-middle-bar lg:block hidden"
       />
       <div className="quomodo-shop-drawer lg:hidden block w-full bg-white">
-        <div className="w-full h-[60px] flex justify-between items-center px-5">
-          <div onClick={drawerAction}>
+        <div className="w-full h-[60px] flex justify-between items-center px-3 sm:px-5">
+          <div onClick={drawerAction} className="flex-shrink-0">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -71,16 +71,23 @@ export default function HeaderOne({ className, drawerAction, type = 1, showNewsB
               />
             </svg>
           </div>
-          <div className="mt-14">
-            <Link to="/">
+          <div className="flex-1 flex items-center justify-center px-2">
+            <Link to="/" className="flex items-center justify-center h-full">
               <img
-                className="w-24 sm:w-32 md:w-36 h-auto"
+                className="h-10 sm:h-12 md:h-14 w-auto object-contain"
                 src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.jpeg`}
                 alt="logo"
+                style={{ maxHeight: '56px', maxWidth: '120px' }}
+                onError={(e) => {
+                  // Fallback to logo.png if logo.jpeg fails
+                  if (e.target.src !== `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`) {
+                    e.target.src = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`;
+                  }
+                }}
               />
             </Link>
           </div>
-          <div className="cart relative cursor-pointer flex items-center">
+          <div className="cart relative cursor-pointer flex items-center flex-shrink-0">
             <Link to="/cart" className="flex items-center relative">
               <span className="flex items-center relative">
                 <ThinBag />

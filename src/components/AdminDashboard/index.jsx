@@ -219,7 +219,7 @@ export default function AdminDashboard() {
       formData.append("name", productForm.name);
       formData.append("description", productForm.description || "");
       formData.append("note", productForm.note || "");
-      formData.append("quantity", productForm.quantity.toString());
+      formData.append("quantity", (productForm.quantity === "" || productForm.quantity === null || productForm.quantity === undefined ? 0 : productForm.quantity).toString());
       formData.append("categoryId", productForm.categoryId);
 
       // Add sizes as JSON string
@@ -726,11 +726,19 @@ export default function AdminDashboard() {
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
-                        value={productForm.quantity === 0 ? "" : productForm.quantity}
+                        value={productForm.quantity === 0 || productForm.quantity === "" || productForm.quantity === null || productForm.quantity === undefined ? "" : String(productForm.quantity)}
                         onChange={(e) => {
-                          const value = e.target.value;
+                          const value = e.target.value.trim();
                           if (value === "" || /^\d+$/.test(value)) {
-                            setProductForm({ ...productForm, quantity: value === "" ? 0 : Number(value) });
+                            setProductForm({ ...productForm, quantity: value === "" ? "" : Number(value) });
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value.trim();
+                          if (value === "" || isNaN(Number(value)) || Number(value) < 0) {
+                            setProductForm({ ...productForm, quantity: 0 });
+                          } else {
+                            setProductForm({ ...productForm, quantity: Number(value) });
                           }
                         }}
                         className="w-full border border-qgray-border rounded-md px-3 py-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
