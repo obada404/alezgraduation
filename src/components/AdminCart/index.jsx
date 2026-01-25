@@ -8,7 +8,7 @@ import { createOrderFromCart } from "../../api/orders";
 import Spinner from "../Helpers/Spinner";
 import { QRCodeSVG } from "qrcode.react";
 
-const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo/jpeg`;
+const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.jpeg`;
 
 export default function AdminCart() {
   const { t } = useTranslation();
@@ -169,6 +169,12 @@ export default function AdminCart() {
               src={LOGO_URL}
               alt="Logo"
               className="mx-auto mb-4 h-20 print:h-16"
+              onError={(e) => {
+                // Fallback to logo.png if logo.jpeg fails
+                if (e.target.src !== `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`) {
+                  e.target.src = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`;
+                }
+              }}
             />
             <h1 className="text-2xl font-bold text-qblack mb-2">فاتورة</h1>
             <p className="text-qgray">رقم الفاتورة: {cart.id}</p>
