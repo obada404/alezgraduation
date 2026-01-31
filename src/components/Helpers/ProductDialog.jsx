@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { addToCart } from "../../api/cart";
 import { getToken } from "../../api/client";
-import { useNavigate } from "react-router-dom";
+import { useMobileLogin } from "../../contexts/MobileLoginContext";
 import Spinner from "./Spinner";
 import { useState } from "react";
 
@@ -10,7 +10,7 @@ const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.jp
 
 export default function ProductDialog({ product, isOpen, onClose, onAddToCart }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { showMobileLogin } = useMobileLogin();
   const [adding, setAdding] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -38,7 +38,10 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
 
   const handleAddToCart = async () => {
     if (!getToken()) {
-      navigate("/login");
+      showMobileLogin(() => {
+        // After successful login, retry adding to cart
+        handleAddToCart();
+      });
       return;
     }
 
@@ -55,7 +58,10 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
       onClose();
     } catch (err) {
       if (err.message?.includes("Unauthorized") || err.message?.includes("401")) {
-        navigate("/login");
+        showMobileLogin(() => {
+          // After successful login, retry adding to cart
+          handleAddToCart();
+        });
       }
     } finally {
       setAdding(false);
@@ -186,8 +192,8 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
                         onClick={() => setSelectedSize(size)}
                         className={`px-4 py-2 rounded-lg border-2 font-semibold transition-all ${
                           selectedSize?.size === size.size
-                            ? "border-qyellow bg-qyellow text-white"
-                            : "border-gray-300 text-qblack hover:border-qyellow"
+                            ? "border-[#D4AF37] bg-[#0A1F44] text-[#D4AF37] shadow-md"
+                            : "border-gray-300 text-qblack hover:border-[#D4AF37]"
                         }`}
                       >
                         {size.size} - ₪ {size.price}
@@ -210,7 +216,7 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
                   <button
                     onClick={handleAddToCart}
                     disabled={adding}
-                    className="w-full h-[50px] rounded-lg bg-qyellow text-white font-semibold transition-all duration-300 hover:bg-opacity-90 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                    className="w-full h-[50px] rounded-lg bg-[#0A1F44] text-[#D4AF37] border border-[#D4AF37] font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 shadow-md"
                   >
                     {adding ? (
                       <>
@@ -230,4 +236,5 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
     </div>
   );
 }
+
 

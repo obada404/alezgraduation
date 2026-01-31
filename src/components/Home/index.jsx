@@ -12,15 +12,21 @@ import ProductDialog from "../Helpers/ProductDialog";
 function PromoBanner({ promotion }) {
   const { t } = useTranslation();
   return (
-    <div className="w-full bg-qyellow text-white rounded-lg p-5 flex justify-between items-center">
-      <div>
+    <div className="w-full bg-qyellow text-white rounded-lg p-5 flex justify-between items-center shadow-2xl hover:shadow-[0_0_30px_rgba(2,24,56,0.6)] transition-all duration-300 transform hover:scale-[1.02] border-2 border-white/30 relative overflow-hidden group">
+      {/* Shimmer effect overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+      
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 rounded-lg"></div>
+      
+      <div className="relative z-10">
         {/* <p className="text-xs uppercase font-semibold">{t("common.promotion")}</p> */}
-        <h3 className="text-xl font-bold">منتجات العروض الترويجية
+        <h3 className="text-xl font-bold drop-shadow-lg text-white brightness-110">عروضنا
         </h3>
         {/* <p className="text-sm text-qblack">{promotion?.description}</p> */}
       </div>
       {promotion?.discountPercent ? (
-        <div className="text-3xl font-bold">{promotion.discountPercent}% OFF</div>
+        <div className="text-3xl font-bold drop-shadow-2xl animate-pulse brightness-110 relative z-10 text-white">{promotion.discountPercent}% OFF</div>
       ) : null}
     </div>
   );
@@ -80,7 +86,10 @@ function ProductCard({ product, onShowDetails }) {
           {t("common.soldOut")}
         </div>
       )}
-      <Link to={`/products/${product.id}`}>
+      <div 
+        onClick={() => onShowDetails(product)}
+        className="cursor-pointer"
+      >
         <div className={`w-full h-48 bg-primarygray flex items-center justify-center overflow-hidden rounded relative ${isSoldOut ? 'opacity-60' : ''}`}>
           <img
             src={imageUrl || LOGO_URL}
@@ -88,18 +97,21 @@ function ProductCard({ product, onShowDetails }) {
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
         </div>
-      </Link>
+      </div>
       <p className="text-xs text-qgray">{product?.category?.name}</p>
-      <Link to={`/products/${product.id}`}>
+      <div 
+        onClick={() => onShowDetails(product)}
+        className="cursor-pointer"
+      >
         <h3 className="text-base font-semibold text-qblack line-clamp-2 group-hover:text-qyellow transition-colors duration-300">
           {product?.title || product?.name}
         </h3>
-      </Link>
+      </div>
       <p className="text-lg font-bold text-qblack">₪ {price}</p>
       {!isSoldOut && (
         <button
           onClick={() => onShowDetails(product)}
-          className="w-full h-[42px] rounded bg-qyellow text-white font-semibold transition-all duration-300 hover:bg-opacity-90 hover:scale-105"
+          className="w-full h-[42px] rounded bg-[#0A1F44] text-[#D4AF37] border border-[#D4AF37] font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105 shadow-md active:scale-95"
         >
           عرض التفاصيل
         </button>
@@ -178,7 +190,7 @@ export default function Home() {
           <div className="space-x-3">
             <button
               onClick={() => navigate("/products")}
-              className="h-[42px] px-4 rounded bg-qyellow text-white font-semibold"
+              className="h-[42px] px-4 rounded bg-[#0A1F44] text-[#D4AF37] border border-[#D4AF37] font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
             >
               {t("common.viewAllProducts")}
             </button>
@@ -207,15 +219,6 @@ export default function Home() {
         {/* Promotions Slider - Show the promotions themselves */}
         {!loading && promotions.length > 0 && (
           <div className="w-full mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-qblack">منتجات العروض الترويجية</h2>
-              <Link
-                to="/products"
-                className="text-qyellow hover:underline font-semibold"
-              >
-                عرض الكل
-              </Link>
-            </div>
             <div className="w-full">
               <SimpleSlider
                 settings={{

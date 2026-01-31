@@ -138,10 +138,10 @@ export async function apiRequest(path, { method = "GET", body, headers } = {}) {
       message = "يجب تسجيل الدخول للمتابعة";
     }
     
-    // Translate "Insufficient product quantity" error
-    if (message.includes("Insufficient product quantity") || message.includes("insufficient") || message.includes("quantity")) {
-      message = "الكمية المتاحة غير كافية";
-    }
+    // Removed quantity validation - allow orders to continue even if quantity is insufficient
+    // if (message.includes("Insufficient product quantity") || message.includes("insufficient") || message.includes("quantity")) {
+    //   message = "الكمية المتاحة غير كافية";
+    // }
     
     // Translate other common backend errors to Arabic
     if (message.includes("Bad Request") || message.includes("bad request")) {

@@ -41,11 +41,11 @@ export default function Drawer({ className, open, action }) {
         {open && (
           <div
             onClick={action}
-            className="w-full h-screen bg-black bg-opacity-40 z-40 right-0 top-0 fixed"
+            className="w-full h-screen bg-black bg-opacity-40 z-[55] right-0 top-0 fixed"
           ></div>
         )}
         <div
-          className={`w-[280px] transition-all duration-300 ease-in-out h-screen overflow-y-auto overflow-x-hidden overflow-style-none bg-white fixed top-0 z-50 ${
+          className={`w-[280px] transition-all duration-300 ease-in-out h-screen overflow-y-auto overflow-x-hidden overflow-style-none bg-white fixed top-0 z-[60] ${
             open ? "right-0" : "-right-[280px]"
           }`}
         >

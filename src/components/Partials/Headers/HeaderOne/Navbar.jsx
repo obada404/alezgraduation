@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+
 import { useTranslation } from "react-i18next";
 import ThinBag from "../../../Helpers/icons/ThinBag";
 import ThinPeople from "../../../Helpers/icons/ThinPeople";
 import Facebook from "../../../Helpers/icons/Facebook";
 import Instagram from "../../../Helpers/icons/Instagram";
-import TikTok from "../../../Helpers/icons/TikTok";
 import WhatsApp from "../../../Helpers/icons/WhatsApp";
 import { getToken, clearToken, getIsAdmin } from "../../../../api/client";
 import { fetchCart } from "../../../../api/cart";
@@ -170,7 +170,7 @@ export default function Navbar({ className, type }) {
                   <Facebook className="w-4 h-4 fill-current" />
                 </a>
                 <a
-                  href="https://www.instagram.com"
+                  href="https://www.instagram.com/alezz_graduation?igsh=bDJxNjM4dWJyajZ1&utm_source=qr"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 text-white bg-gray-500/30 hover:bg-white/20"
@@ -179,16 +179,7 @@ export default function Navbar({ className, type }) {
                   <Instagram className="w-4 h-4 fill-current" />
                 </a>
                 <a
-                  href="https://www.tiktok.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 text-white bg-gray-500/30 hover:bg-white/20"
-                  aria-label="TikTok"
-                >
-                  <TikTok className="w-4 h-4 fill-current" />
-                </a>
-                <a
-                  href="https://wa.me/970569027059"
+                  href="https://wa.me/message/Z7UQEBQW4H5ZJ1"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 text-white bg-gray-500/30 hover:bg-white/20"

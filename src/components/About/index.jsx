@@ -113,12 +113,12 @@ export default function About() {
                 </div>
 
                 <a
-                  href="https://wa.me/970569027059"
+                  href="https://wa.me/message/Z7UQEBQW4H5ZJ1"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block mt-6"
                 >
-                  <span className="inline-block px-8 py-4 text-base font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 bg-qyellow text-white rounded">
+                  <span className="inline-block px-8 py-4 text-base font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 bg-[#0A1F44] text-[#D4AF37] border border-[#D4AF37] rounded">
                     تواصل معنا
                   </span>
                 </a>

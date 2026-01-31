@@ -21,6 +21,7 @@ export default {
     login: "تسجيل الدخول",
     logout: "تسجيل الخروج",
     signup: "إنشاء حساب",
+    adminDashboard: "لوحة التحكم",
   },
 
   // Categories

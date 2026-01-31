@@ -202,10 +202,19 @@ export default function AdminDashboard() {
 
       const method = editingProduct ? "PATCH" : "POST";
 
-      // Filter images - only include those with files
-      const validImages = productForm.images.filter(img => img.file !== null && img.file !== undefined);
+      // Separate new images (with files) from existing images (with URLs only, not blob URLs)
+      const newImages = productForm.images.filter(img => img.file !== null && img.file !== undefined);
+      const existingImages = productForm.images.filter(img => !img.file && img.url && !img.url.startsWith('blob:'));
 
-      if (validImages.length === 0) {
+      // For new products, require at least one image
+      if (!editingProduct && newImages.length === 0) {
+        setError("يجب رفع صورة واحدة على الأقل");
+        setLoading(false);
+        return;
+      }
+
+      // For editing, require at least one image (either existing or new)
+      if (editingProduct && newImages.length === 0 && existingImages.length === 0) {
         setError("يجب رفع صورة واحدة على الأقل");
         setLoading(false);
         return;
@@ -231,10 +240,69 @@ export default function AdminDashboard() {
         }));
       formData.append("sizes", JSON.stringify(validSizes));
 
-      // Add images as files - backend expects "images" field
-      validImages.forEach((img) => {
-        formData.append("images", img.file);
-      });
+      // Helper function to convert image URL to File
+      const urlToFile = async (url, filename) => {
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          return new File([blob], filename, { type: blob.type });
+        } catch (error) {
+          console.error("Error converting URL to File:", error);
+          return null;
+        }
+      };
+
+      // When editing, convert existing images to files and send ALL images (existing + new) as files
+      if (editingProduct) {
+        setLoading(true);
+        setError("");
+        
+        try {
+          // Convert existing image URLs to File objects
+          const existingImageFiles = await Promise.all(
+            existingImages.map(async (img, index) => {
+              if (img.url && !img.url.startsWith('blob:')) {
+                const filename = `existing_image_${index}.jpg`;
+                return await urlToFile(img.url, filename);
+              }
+              return null;
+            })
+          );
+
+          // Filter out any null values (failed conversions)
+          const validExistingFiles = existingImageFiles.filter(file => file !== null);
+
+          // Combine existing files (converted from URLs) and new files
+          // Order matters - maintain the order from productForm.images
+          const allImageFiles = [];
+          for (const img of productForm.images) {
+            if (img.file) {
+              // New image with file
+              allImageFiles.push(img.file);
+            } else if (img.url && !img.url.startsWith('blob:')) {
+              // Existing image - find the converted file
+              const existingIndex = existingImages.findIndex(existing => existing.url === img.url);
+              if (existingIndex >= 0 && validExistingFiles[existingIndex]) {
+                allImageFiles.push(validExistingFiles[existingIndex]);
+              }
+            }
+          }
+
+          // Add all images as files - backend will replace all images with this set
+          allImageFiles.forEach((file) => {
+            formData.append("images", file);
+          });
+        } catch (error) {
+          setError("فشل في تحميل الصور الموجودة. يرجى المحاولة مرة أخرى");
+          setLoading(false);
+          return;
+        }
+      } else {
+        // For new products, only send new images
+        newImages.forEach((img) => {
+          formData.append("images", img.file);
+        });
+      }
 
       // FormData ready for submission
 
@@ -339,7 +407,7 @@ export default function AdminDashboard() {
       quantity: product.quantity || 0,
       categoryId: product.categoryId || "",
       sizes: product.sizes?.length > 0 ? product.sizes.map(s => ({ size: s.size, price: s.price })) : [{ size: "", price: 0 }],
-      images: product.images?.length > 0 ? product.images.map(img => ({ file: null, url: img.url, alt: img.alt || "", order: img.order || 1 })) : [{ file: null, url: "", alt: "", order: 1 }],
+      images: product.images?.length > 0 ? product.images.map(img => ({ file: null, url: img.url, alt: img.alt || "", order: img.order || 1, id: img.id || null })) : [{ file: null, url: "", alt: "", order: 1, id: null }],
     });
     setShowProductForm(true);
   };

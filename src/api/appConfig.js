@@ -22,3 +22,4 @@ export async function fetchAppConfig() {
   return await apiGet("/app-config");
 }
 
+

@@ -31,7 +31,10 @@ function ProductCard({ product, onShowDetails }) {
           {t("common.soldOut")}
         </div>
       )}
-      <Link to={`/products/${product.id}`}>
+      <div 
+        onClick={() => onShowDetails(product)}
+        className="cursor-pointer"
+      >
         <div className={`w-full h-48 bg-primarygray flex items-center justify-center overflow-hidden rounded relative ${isSoldOut ? 'opacity-60' : ''}`}>
           <img
             src={imageUrl || LOGO_URL}
@@ -39,20 +42,23 @@ function ProductCard({ product, onShowDetails }) {
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
         </div>
-      </Link>
+      </div>
       <div className="flex-1">
         <p className="text-xs text-qgray mb-1">{product?.category?.name}</p>
-        <Link to={`/products/${product.id}`}>
+        <div 
+          onClick={() => onShowDetails(product)}
+          className="cursor-pointer"
+        >
           <h3 className="text-base font-semibold text-qblack line-clamp-2 group-hover:text-qyellow transition-colors duration-300">
             {product?.title || product?.name}
           </h3>
-        </Link>
+        </div>
         <p className="text-lg font-bold text-qblack mt-1">₪ {price}</p>
       </div>
       {!isSoldOut ? (
         <button
           onClick={() => onShowDetails(product)}
-          className="w-full h-[42px] rounded bg-qyellow text-white font-semibold transition-all duration-300 hover:bg-opacity-90 hover:scale-105"
+          className="w-full h-[42px] rounded bg-[#0A1F44] text-[#D4AF37] border border-[#D4AF37] font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105 shadow-md active:scale-95"
         >
           عرض التفاصيل
         </button>
@@ -68,17 +74,83 @@ function ProductCard({ product, onShowDetails }) {
   );
 }
 
+function NewestProductCard({ product, onShowDetails }) {
+  const { t } = useTranslation();
+  const price = priceFromProduct(product);
+  const imageUrl = product?.images?.[0]?.url;
+  const isSoldOut = product?.soldOut || product?.isSoldOut || false;
+  
+  return (
+    <div 
+      className="bg-gradient-to-br from-[#0A1F44] to-[#1a3a6b] rounded-xl p-5 flex flex-col space-y-4 relative group transition-all duration-300 hover:shadow-2xl hover:scale-105 border-2 border-[#D4AF37]/30"
+    >
+      {/* New Badge */}
+      <div className="absolute top-4 left-4 bg-[#D4AF37] text-[#0A1F44] px-3 py-1 rounded-full text-xs font-bold z-10 shadow-lg">
+        جديد
+      </div>
+      
+      {isSoldOut && (
+        <div className="absolute top-4 right-4 bg-qred text-white px-3 py-1 rounded text-xs font-semibold z-10">
+          {t("common.soldOut")}
+        </div>
+      )}
+      
+      <div 
+        onClick={() => onShowDetails(product)}
+        className="cursor-pointer"
+      >
+        <div className={`w-full h-64 bg-white/10 backdrop-blur-sm flex items-center justify-center overflow-hidden rounded-lg relative ${isSoldOut ? 'opacity-60' : ''} border border-white/20`}>
+          <img
+            src={imageUrl || LOGO_URL}
+            alt={product?.name || product?.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-125"
+          />
+        </div>
+      </div>
+      
+      <div className="flex-1 text-right">
+        <p className="text-xs text-[#D4AF37]/80 mb-2 font-semibold">{product?.category?.name}</p>
+        <div 
+          onClick={() => onShowDetails(product)}
+          className="cursor-pointer"
+        >
+          <h3 className="text-lg font-bold text-white line-clamp-2 group-hover:text-[#D4AF37] transition-colors duration-300">
+            {product?.title || product?.name}
+          </h3>
+        </div>
+        <p className="text-2xl font-bold text-[#D4AF37] mt-2">₪ {price}</p>
+      </div>
+      
+      {!isSoldOut ? (
+        <button
+          onClick={() => onShowDetails(product)}
+          className="w-full h-[48px] rounded-lg bg-blue-200 text-black border border-[#0A1F44] font-bold transition-all duration-300 hover:bg-blue-300 hover:scale-105 shadow-lg active:scale-95"
+        >
+          عرض التفاصيل
+        </button>
+      ) : (
+        <button
+          disabled
+          className="w-full h-[48px] rounded-lg bg-gray-500 text-white font-semibold cursor-not-allowed opacity-60"
+        >
+          {t("common.soldOut")}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function AllProductPage({ className }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const categoryId = searchParams.get("category");
+  const searchQuery = searchParams.get("search") || "";
   const [allProducts, setAllProducts] = useState([]);
   const [products, setProducts] = useState([]);
   const [newestProducts, setNewestProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -166,37 +238,11 @@ export default function AllProductPage({ className }) {
         <div className="container-x mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-qblack">{t("common.products")}</h1>
-              <p className="text-sm text-qgray mt-1">
-              </p>
             </div>
             <div className="flex items-center space-x-3 space-x-reverse gap-3">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="بحث عن منتج..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-[40px] px-4 pr-10 border border-qgray-border rounded-md text-sm text-qblack placeholder:text-qgray focus:outline-none focus:ring-2 focus:ring-qyellow focus:border-transparent"
-                  dir="rtl"
-                />
-                <svg
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-qgray"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
               <button
                 onClick={() => navigate("/cart")}
-                className="h-[40px] px-4 rounded bg-qyellow text-white font-semibold whitespace-nowrap"
+                className="h-[40px] px-4 rounded bg-[#0A1F44] text-[#D4AF37] border border-[#D4AF37] font-semibold whitespace-nowrap shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
               >
                 {t("common.goToCart")}
               </button>
@@ -252,7 +298,7 @@ export default function AllProductPage({ className }) {
                 >
                   {newestProducts.map((product) => (
                     <div key={product.id} className="px-2">
-                      <ProductCard
+                      <NewestProductCard
                         product={product}
                         onShowDetails={handleShowDetails}
                       />
@@ -261,7 +307,10 @@ export default function AllProductPage({ className }) {
                 </SimpleSlider>
               </div>
               {/* Line after Newest Products section */}
-              <div className="w-full border-t border-qgray-border mt-10 mb-6"></div>
+              <div className="w-full mt-10 mb-6">
+                <h2 className="text-2xl font-bold text-qblack mb-6">المنتجات</h2>
+                <div className="w-full border-t border-qgray-border"></div>
+              </div>
             </div>
           )}
 
@@ -273,6 +322,11 @@ export default function AllProductPage({ className }) {
             <div className="text-center py-10 text-qred">{error}</div>
           ) : (
             <>
+              {!categoryId && newestProducts.length === 0 && (
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-qblack">المنتجات</h2>
+                </div>
+              )}
               {categoryId && (
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-qblack">

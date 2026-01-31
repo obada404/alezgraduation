@@ -123,7 +123,7 @@ export default function NewsBar() {
           }
         }
         .animate-scroll-ltr {
-          animation: scroll-ltr ${Math.max(news.length * 10, 20)}s linear infinite;
+          animation: scroll-ltr ${Math.max(news.length * 1.5, 5)}s linear infinite;
         }
         .animate-scroll-ltr:hover {
           animation-play-state: paused;

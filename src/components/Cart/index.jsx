@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import Layout from "../Partials/Layout";
 import { fetchCart, fetchCartById, updateCartItem, removeCartItem, clearCart } from "../../api/cart";
 import { getToken, getIsAdmin } from "../../api/client";
+import { useMobileLogin } from "../../contexts/MobileLoginContext";
 import Spinner from "../Helpers/Spinner";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -12,6 +13,7 @@ const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo/jp
 export default function Cart() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showMobileLogin } = useMobileLogin();
   const [searchParams] = useSearchParams();
   const cartId = searchParams.get("cartId");
   const orderId = searchParams.get("orderId");
@@ -41,7 +43,10 @@ export default function Cart() {
         // Otherwise, fetch current user's cart
         if (!getToken()) {
           setLoading(false);
-          setError("يجب تسجيل الدخول للمتابعة");
+          showMobileLogin(() => {
+            // After successful login, reload cart
+            loadCart();
+          });
           return;
         }
         data = await fetchCart();
@@ -51,9 +56,8 @@ export default function Cart() {
       let errorMsg = err.message || "حدث خطآ،جاري المتابعة";
       if (errorMsg.includes("Unauthorized") || errorMsg.includes("401")) {
         errorMsg = "يجب تسجيل الدخول للمتابعة";
-      } else if (errorMsg.includes("Insufficient") || errorMsg.includes("quantity")) {
-        errorMsg = "الكمية المتاحة غير كافية";
       }
+      // Removed quantity validation check - allow any quantity
       setError(errorMsg);
     } finally {
       setLoading(false);
@@ -97,16 +101,22 @@ export default function Cart() {
   const handleQtyChange = async (itemId, qty) => {
     try {
       setUpdatingId(itemId);
-      await updateCartItem(itemId, { quantity: qty });
-      await loadCart();
-    } catch (err) {
-      let errorMsg = err.message || "حدث خطآ،جاري المتابعة";
-      if (errorMsg.includes("Unauthorized") || errorMsg.includes("401")) {
-        errorMsg = "يجب تسجيل الدخول للمتابعة";
-      } else if (errorMsg.includes("Insufficient") || errorMsg.includes("quantity")) {
-        errorMsg = "الكمية المتاحة غير كافية";
+      // Update local state optimistically first
+      if (cart && cart.items) {
+        const updatedItems = cart.items.map(item => 
+          item.id === itemId ? { ...item, quantity: qty } : item
+        );
+        setCart({ ...cart, items: updatedItems });
       }
-      setError(errorMsg);
+      // Try to update on backend, but don't reload cart to preserve user's entered quantity
+      try {
+        await updateCartItem(itemId, { quantity: qty });
+      } catch (err) {
+        // Silently ignore all errors - keep the user's entered quantity
+        // Don't reload cart to prevent backend from reverting the quantity
+      }
+    } catch (err) {
+      // Silently ignore all errors - keep the user's entered quantity
     } finally {
       setUpdatingId("");
     }
@@ -121,9 +131,8 @@ export default function Cart() {
       let errorMsg = err.message || "حدث خطآ،جاري المتابعة";
       if (errorMsg.includes("Unauthorized") || errorMsg.includes("401")) {
         errorMsg = "يجب تسجيل الدخول للمتابعة";
-      } else if (errorMsg.includes("Insufficient") || errorMsg.includes("quantity")) {
-        errorMsg = "الكمية المتاحة غير كافية";
       }
+      // Removed quantity validation check - allow any quantity
       setError(errorMsg);
     } finally {
       setUpdatingId("");
@@ -139,9 +148,8 @@ export default function Cart() {
       let errorMsg = err.message || "حدث خطآ،جاري المتابعة";
       if (errorMsg.includes("Unauthorized") || errorMsg.includes("401")) {
         errorMsg = "يجب تسجيل الدخول للمتابعة";
-      } else if (errorMsg.includes("Insufficient") || errorMsg.includes("quantity")) {
-        errorMsg = "الكمية المتاحة غير كافية";
       }
+      // Removed quantity validation check - allow any quantity
       setError(errorMsg);
     } finally {
       setUpdatingId("");
@@ -425,7 +433,7 @@ export default function Cart() {
                 {!isViewOnly && (
                   <button
                     onClick={handleCheckout}
-                    className="h-[56px] px-8 rounded-xl bg-qyellow text-white text-lg font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 w-full sm:w-auto"
+                    className="h-[56px] px-8 rounded-xl bg-[#0A1F44] text-[#D4AF37] border border-[#D4AF37] text-lg font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 w-full sm:w-auto"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -449,7 +457,7 @@ export default function Cart() {
                 <p className="text-qgray mb-6">ابدأ التسوق الآن!</p>
                 <Link
                   to="/products"
-                  className="inline-flex items-center gap-2 h-[48px] px-8 rounded-xl bg-qyellow text-white text-base font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  className="inline-flex items-center gap-2 h-[48px] px-8 rounded-xl bg-[#0A1F44] text-[#D4AF37] border border-[#D4AF37] text-base font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />

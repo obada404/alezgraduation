@@ -1,7 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ThinBag from "../../../Helpers/icons/ThinBag";
-import Middlebar from "./Middlebar";
 import Navbar from "./Navbar";
 import NewsBar from "../../NewsBar";
 import CategoriesBar from "../../CategoriesBar";
@@ -11,6 +10,7 @@ import { getToken } from "../../../../api/client";
 export default function HeaderOne({ className, drawerAction, type = 1, showNewsBar = false }) {
   const location = useLocation();
   const [cartItemsCount, setCartItemsCount] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Fetch cart items count - only when location changes, not on interval
   useEffect(() => {
@@ -36,24 +36,37 @@ export default function HeaderOne({ className, drawerAction, type = 1, showNewsB
     // Only refresh when location changes, not on interval to avoid multiple API calls
   }, [location]);
 
+  // Handle scroll to make navbar sticky
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY || window.pageYOffset;
+      setIsScrolled(scrollPosition > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+
+  // Calculate total height of navbar + categories bar for spacer
+  const navbarHeight = 90; // Navbar height
+  const categoriesBarHeight = 50; // Approximate categories bar height
+  const stickyHeaderHeight = navbarHeight + categoriesBarHeight;
 
   return (
     <header className={` ${className || ""} header-section-wrapper relative`}>
       <div className="quomodo-shop-top-bar w-full h-[10px] bg-white" />
-      <Navbar type={type} className="quomodo-shop-nav-bar lg:block hidden" />
-      <div className="lg:block hidden">
+      <div className={`hidden lg:block ${isScrolled ? 'fixed top-0 left-0 right-0 z-50 shadow-lg' : 'relative'}`}>
+        <Navbar type={type} className="quomodo-shop-nav-bar" />
         <CategoriesBar />
       </div>
+      {isScrolled && <div className="hidden lg:block" style={{ height: `${stickyHeaderHeight}px` }} />}
       {showNewsBar && (
-        <div className="lg:block hidden">
+        <div className="hidden lg:block">
           <NewsBar />
         </div>
       )}
-      <Middlebar
-        type={type}
-        className=" quomodo-shop-middle-bar lg:block hidden"
-      />
-      <div className="quomodo-shop-drawer lg:hidden block w-full bg-white">
+      <div className={`lg:hidden block w-full bg-white ${isScrolled ? 'fixed top-0 left-0 right-0 z-50 shadow-lg' : 'relative'}`}>
         <div className="w-full h-[60px] flex justify-between items-center px-3 sm:px-5">
           <div onClick={drawerAction} className="flex-shrink-0">
             <svg
@@ -74,10 +87,10 @@ export default function HeaderOne({ className, drawerAction, type = 1, showNewsB
           <div className="flex-1 flex items-center justify-center px-2">
             <Link to="/" className="flex items-center justify-center h-full">
               <img
-                className="h-10 sm:h-12 md:h-14 w-auto object-contain"
+                className="h-14 sm:h-16 md:h-20 w-auto object-contain"
                 src={`${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.jpeg`}
                 alt="logo"
-                style={{ maxHeight: '56px', maxWidth: '120px' }}
+                style={{ maxHeight: '80px', maxWidth: '160px' }}
                 onError={(e) => {
                   // Fallback to logo.png if logo.jpeg fails
                   if (e.target.src !== `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.png`) {
@@ -105,8 +118,13 @@ export default function HeaderOne({ className, drawerAction, type = 1, showNewsB
           </div>
         </div>
         <CategoriesBar />
-        {showNewsBar && <NewsBar />}
       </div>
+      {showNewsBar && (
+        <div className="lg:hidden block">
+          <NewsBar />
+        </div>
+      )}
+      {isScrolled && <div className="lg:hidden block" style={{ height: '140px' }} />}
     </header>
   );
 }

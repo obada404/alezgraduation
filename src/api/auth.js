@@ -34,4 +34,17 @@ export function isAuthenticated() {
   return Boolean(getToken());
 }
 
+export async function loginWithMobile(mobileNumber) {
+  const data = await apiPost("/auth/login/mobile", { mobileNumber });
+  // Backend returns accessToken (camelCase) or access_token (snake_case)
+  const token = data?.accessToken || data?.access_token;
+  if (token) {
+    setToken(token);
+  }
+  // Save isAdmin flag
+  if (data?.isAdmin !== undefined) {
+    setIsAdmin(data.isAdmin);
+  }
+  return data;
+}
 
