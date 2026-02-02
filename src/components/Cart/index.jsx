@@ -7,6 +7,7 @@ import { getToken, getIsAdmin } from "../../api/client";
 import { useMobileLogin } from "../../contexts/MobileLoginContext";
 import Spinner from "../Helpers/Spinner";
 import { Link, useNavigate } from "react-router-dom";
+import CheckoutDialog from "../Helpers/CheckoutDialog";
 
 const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo/jpeg`;
 
@@ -22,6 +23,7 @@ export default function Cart() {
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState("");
   const [quantityInputs, setQuantityInputs] = useState({}); // Local state for quantity inputs
+  const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
   const isViewOnly = !!(cartId || orderId); // If cartId or orderId is provided, it's view-only mode
 
   // Redirect admin to admin order page if orderId is provided
@@ -111,6 +113,8 @@ export default function Cart() {
       // Try to update on backend, but don't reload cart to preserve user's entered quantity
       try {
         await updateCartItem(itemId, { quantity: qty });
+        // Dispatch event to update cart count in header
+        window.dispatchEvent(new Event('cartUpdated'));
       } catch (err) {
         // Silently ignore all errors - keep the user's entered quantity
         // Don't reload cart to prevent backend from reverting the quantity
@@ -127,6 +131,8 @@ export default function Cart() {
       setUpdatingId(itemId);
       await removeCartItem(itemId);
       await loadCart();
+      // Dispatch event to update cart count in header
+      window.dispatchEvent(new Event('cartUpdated'));
     } catch (err) {
       let errorMsg = err.message || "حدث خطآ،جاري المتابعة";
       if (errorMsg.includes("Unauthorized") || errorMsg.includes("401")) {
@@ -144,6 +150,8 @@ export default function Cart() {
       setUpdatingId("clear");
       await clearCart();
       await loadCart();
+      // Dispatch event to update cart count in header
+      window.dispatchEvent(new Event('cartUpdated'));
     } catch (err) {
       let errorMsg = err.message || "حدث خطآ،جاري المتابعة";
       if (errorMsg.includes("Unauthorized") || errorMsg.includes("401")) {
@@ -166,56 +174,20 @@ export default function Cart() {
     if (!cart?.items || cart.items.length === 0) {
       return;
     }
-
-    // Get cart link
-    const cartLink = cart?.id 
-      ? `${window.location.origin}/cart?cartId=${cart.id}`
-      : `${window.location.origin}/cart`;
-
-    // Format WhatsApp message
-    let message = "مرحباً، أرغب في تقديم طلب جديد:\n\n";
-    
-    cart.items.forEach((item, index) => {
-      message += `${index + 1}. ${item?.product?.title || item?.product?.name || "منتج"}\n`;
-      if (item?.product?.category?.name) {
-        message += `   الفئة: ${item.product.category.name}\n`;
-      }
-      if (item?.size) {
-        message += `   المقاس: ${item.size}\n`;
-      }
-      if (item?.color) {
-        message += `   اللون: ${item.color}\n`;
-      }
-      message += `   الكمية: ${item.quantity}\n`;
-      message += `   السعر: ₪ ${item.price || 0}\n`;
-      message += `   المجموع: ₪ ${(item.price || 0) * item.quantity}\n\n`;
-    });
-
-    message += `الإجمالي الكلي: ₪ ${total.toFixed(2)}\n\n`;
-    
-    // Add phone number if available
-    if (cart?.user?.phone || cart?.phone) {
-      message += `رقم الهاتف: ${cart.user?.phone || cart.phone}\n\n`;
-    }
-    
-    // Add cart link
-    message += `رابط السلة: ${cartLink}\n\n`;
-    
-    message += "شكراً لكم";
-
-    // Encode message for URL
-    const encodedMessage = encodeURIComponent(message);
-    
-    // WhatsApp phone number (remove leading zeros and use + sign)
-    const phoneNumber = "970569027059"; // Remove 00 and use country code directly
-    
-    // Open WhatsApp chat in new tab
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-    window.open(whatsappUrl, "_blank");
+    setShowCheckoutDialog(true);
   };
 
   return (
     <Layout>
+      <CheckoutDialog
+        isOpen={showCheckoutDialog}
+        onClose={() => setShowCheckoutDialog(false)}
+        cart={cart}
+        total={total}
+        onSubmit={() => {
+          // Optional: handle success callback
+        }}
+      />
       <div className="container-x mx-auto py-6 sm:py-8 md:py-12 px-4 sm:px-6">
         {/* Header Section */}
         <div className="mb-8">

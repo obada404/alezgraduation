@@ -81,7 +81,7 @@ export default function AdminDashboard() {
     note: "",
     quantity: 0,
     categoryId: "",
-    sizes: [{ size: "", price: 0 }],
+    sizes: [{ size: "", priceBeforeDiscount: "", priceAfterDiscount: "" }],
     images: [{ file: null, url: "", alt: "", order: 1 }],
   });
   
@@ -157,6 +157,16 @@ export default function AdminDashboard() {
       } else if (activeTab === "products") {
         const data = await fetchProducts();
         setProducts(Array.isArray(data) ? data : []);
+      } else if (activeTab === "discountedProducts") {
+        const data = await fetchProducts();
+        // Filter products that have at least one size with a discount
+        const discounted = Array.isArray(data) ? data.filter(product => {
+          return product.sizes?.some(size => 
+            size.priceBeforeDiscount && 
+            size.priceBeforeDiscount > (size.priceAfterDiscount || size.price || 0)
+          );
+        }) : [];
+        setProducts(discounted);
       } else if (activeTab === "categories") {
         const data = await fetchCategories();
         setCategories(Array.isArray(data) ? data : []);
@@ -236,7 +246,8 @@ export default function AdminDashboard() {
         .filter(size => size.size.trim() !== "")
         .map(size => ({
           size: size.size,
-          price: parseFloat(size.price) || 0
+          priceBeforeDiscount: size.priceBeforeDiscount ? parseFloat(size.priceBeforeDiscount) : null,
+          priceAfterDiscount: parseFloat(size.priceAfterDiscount) || 0
         }));
       formData.append("sizes", JSON.stringify(validSizes));
 
@@ -406,7 +417,11 @@ export default function AdminDashboard() {
       note: product.note || "",
       quantity: product.quantity || 0,
       categoryId: product.categoryId || "",
-      sizes: product.sizes?.length > 0 ? product.sizes.map(s => ({ size: s.size, price: s.price })) : [{ size: "", price: 0 }],
+      sizes: product.sizes?.length > 0 ? product.sizes.map(s => ({ 
+        size: s.size, 
+        priceBeforeDiscount: s.priceBeforeDiscount || "", 
+        priceAfterDiscount: s.priceAfterDiscount || s.price || "" 
+      })) : [{ size: "", priceBeforeDiscount: "", priceAfterDiscount: "" }],
       images: product.images?.length > 0 ? product.images.map(img => ({ file: null, url: img.url, alt: img.alt || "", order: img.order || 1, id: img.id || null })) : [{ file: null, url: "", alt: "", order: 1, id: null }],
     });
     setShowProductForm(true);
@@ -435,7 +450,7 @@ export default function AdminDashboard() {
       note: "",
       quantity: 0,
       categoryId: "",
-      sizes: [{ size: "", price: 0 }],
+      sizes: [{ size: "", priceBeforeDiscount: "", priceAfterDiscount: "" }],
       images: [{ file: null, url: "", alt: "", order: 1 }],
     });
   };
@@ -449,7 +464,7 @@ export default function AdminDashboard() {
   const addSizeField = () => {
     setProductForm({
       ...productForm,
-      sizes: [...productForm.sizes, { size: "", price: 0 }],
+      sizes: [...productForm.sizes, { size: "", priceBeforeDiscount: "", priceAfterDiscount: "" }],
     });
   };
 
@@ -462,7 +477,11 @@ export default function AdminDashboard() {
 
   const updateSizeField = (index, field, value) => {
     const newSizes = [...productForm.sizes];
-    newSizes[index][field] = field === "price" ? Number(value) : value;
+    if (field === "priceBeforeDiscount" || field === "priceAfterDiscount") {
+      newSizes[index][field] = value === "" ? "" : Number(value);
+    } else {
+      newSizes[index][field] = value;
+    }
     setProductForm({ ...productForm, sizes: newSizes });
   };
 
@@ -597,6 +616,22 @@ export default function AdminDashboard() {
           </button>
           <button
             onClick={() => {
+              setActiveTab("discountedProducts");
+              setShowProductForm(false);
+              setShowCategoryForm(false);
+              setShowPromotionForm(false);
+              setShowNewsForm(false);
+            }}
+            className={`px-4 py-2 font-semibold transition-colors whitespace-nowrap ${
+              activeTab === "discountedProducts"
+                ? "text-qyellow border-b-2 border-qyellow"
+                : "text-qgray hover:text-qblack"
+            }`}
+          >
+            المنتجات المخفضة
+          </button>
+          <button
+            onClick={() => {
               setActiveTab("categories");
               setShowProductForm(false);
               setShowCategoryForm(false);
@@ -711,10 +746,12 @@ export default function AdminDashboard() {
         </div>
 
         {/* Products Tab */}
-        {activeTab === "products" && (
+        {(activeTab === "products" || activeTab === "discountedProducts") && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-qblack">جميع المنتجات</h2>
+              <h2 className="text-xl font-semibold text-qblack">
+                {activeTab === "discountedProducts" ? "المنتجات المخفضة" : "جميع المنتجات"}
+              </h2>
               <button
                 onClick={() => {
                   setEditingProduct(null);
@@ -848,32 +885,46 @@ export default function AdminDashboard() {
                       </button>
                     </div>
                     {productForm.sizes.map((size, index) => (
-                      <div key={index} className="flex gap-2 mb-2">
-                        <input
-                          type="text"
-                          placeholder="المقاس"
-                          value={size.size}
-                          onChange={(e) => updateSizeField(index, "size", e.target.value)}
-                          className="flex-1 border border-qgray-border rounded-md px-3 py-2"
-                        />
-                        <input
-                          type="number"
-                          placeholder="السعر"
-                          value={size.price}
-                          onChange={(e) => updateSizeField(index, "price", e.target.value)}
-                          className="w-32 border border-qgray-border rounded-md px-3 py-2"
-                          min="0"
-                          step="0.01"
-                        />
-                        {productForm.sizes.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeSizeField(index)}
-                            className="px-3 py-2 bg-red-100 text-red-800 rounded-md hover:bg-red-200"
-                          >
-                            حذف
-                          </button>
-                        )}
+                      <div key={index} className="flex flex-col gap-2 mb-3 p-3 border border-gray-200 rounded-lg">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="المقاس"
+                            value={size.size}
+                            onChange={(e) => updateSizeField(index, "size", e.target.value)}
+                            className="flex-1 border border-qgray-border rounded-md px-3 py-2"
+                          />
+                          {productForm.sizes.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeSizeField(index)}
+                              className="px-3 py-2 bg-red-100 text-red-800 rounded-md hover:bg-red-200"
+                            >
+                              حذف
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            placeholder="السعر قبل الخصم (اختياري)"
+                            value={size.priceBeforeDiscount || ""}
+                            onChange={(e) => updateSizeField(index, "priceBeforeDiscount", e.target.value)}
+                            className="flex-1 border border-qgray-border rounded-md px-3 py-2"
+                            step="0.01"
+                            min="0"
+                          />
+                          <input
+                            type="number"
+                            placeholder="السعر بعد الخصم"
+                            value={size.priceAfterDiscount || ""}
+                            onChange={(e) => updateSizeField(index, "priceAfterDiscount", e.target.value)}
+                            className="flex-1 border border-qgray-border rounded-md px-3 py-2"
+                            step="0.01"
+                            min="0"
+                            required
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>

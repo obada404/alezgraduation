@@ -1,4 +1,4 @@
-import { apiPost, setToken, clearToken, getToken, setIsAdmin } from "./client";
+import { apiPost, setToken, clearToken, getToken, setIsAdmin, setMobileNumber } from "./client";
 
 export async function login(email, password) {
   const data = await apiPost("/auth/login", { email, password });
@@ -40,6 +40,10 @@ export async function loginWithMobile(mobileNumber) {
   const token = data?.accessToken || data?.access_token;
   if (token) {
     setToken(token);
+  }
+  // Save mobile number for later use
+  if (mobileNumber) {
+    setMobileNumber(mobileNumber);
   }
   // Save isAdmin flag
   if (data?.isAdmin !== undefined) {

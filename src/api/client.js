@@ -65,6 +65,7 @@ export const setToken = (token) => {
 export const clearToken = () => {
   setToken(null);
   setIsAdmin(false);
+  clearMobileNumber();
 };
 
 export const getIsAdmin = () => {
@@ -86,6 +87,30 @@ export const setIsAdmin = (isAdmin) => {
   } catch (err) {
     // ignore storage errors
   }
+};
+
+export const getMobileNumber = () => {
+  try {
+    return localStorage.getItem("mobile_number") || null;
+  } catch (err) {
+    return null;
+  }
+};
+
+export const setMobileNumber = (mobileNumber) => {
+  try {
+    if (mobileNumber) {
+      localStorage.setItem("mobile_number", mobileNumber);
+    } else {
+      localStorage.removeItem("mobile_number");
+    }
+  } catch (err) {
+    // ignore storage errors
+  }
+};
+
+export const clearMobileNumber = () => {
+  setMobileNumber(null);
 };
 
 const buildHeaders = (customHeaders = {}) => {

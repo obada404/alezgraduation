@@ -6,19 +6,15 @@ import { fetchProducts } from "../../api/products";
 import SimpleSlider from "../Helpers/SliderCom";
 import Spinner from "../Helpers/Spinner";
 import ProductDialog from "../Helpers/ProductDialog";
-
-const priceFromProduct = (product) => {
-  if (product?.sizes?.length) {
-    return product.sizes[0].price;
-  }
-  return 0;
-};
+import PriceDisplay from "../Helpers/PriceDisplay";
 
 const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo/jpeg`;
 
 function ProductCard({ product, onShowDetails }) {
   const { t } = useTranslation();
-  const price = priceFromProduct(product);
+  const firstSize = product?.sizes?.[0];
+  const priceAfterDiscount = firstSize?.priceAfterDiscount || firstSize?.price || 0;
+  const priceBeforeDiscount = firstSize?.priceBeforeDiscount;
   const imageUrl = product?.images?.[0]?.url;
   const isSoldOut = product?.soldOut || product?.isSoldOut || false;
   
@@ -53,7 +49,11 @@ function ProductCard({ product, onShowDetails }) {
             {product?.title || product?.name}
           </h3>
         </div>
-        <p className="text-lg font-bold text-qblack mt-1">₪ {price}</p>
+        <PriceDisplay 
+          priceAfterDiscount={priceAfterDiscount}
+          priceBeforeDiscount={priceBeforeDiscount}
+          className="mt-1"
+        />
       </div>
       {!isSoldOut ? (
         <button
@@ -76,7 +76,9 @@ function ProductCard({ product, onShowDetails }) {
 
 function NewestProductCard({ product, onShowDetails }) {
   const { t } = useTranslation();
-  const price = priceFromProduct(product);
+  const firstSize = product?.sizes?.[0];
+  const priceAfterDiscount = firstSize?.priceAfterDiscount || firstSize?.price || 0;
+  const priceBeforeDiscount = firstSize?.priceBeforeDiscount;
   const imageUrl = product?.images?.[0]?.url;
   const isSoldOut = product?.soldOut || product?.isSoldOut || false;
   
@@ -118,7 +120,13 @@ function NewestProductCard({ product, onShowDetails }) {
             {product?.title || product?.name}
           </h3>
         </div>
-        <p className="text-2xl font-bold text-[#D4AF37] mt-2">₪ {price}</p>
+        <div className="mt-2">
+          <PriceDisplay 
+            priceAfterDiscount={priceAfterDiscount}
+            priceBeforeDiscount={priceBeforeDiscount}
+            className="text-2xl"
+          />
+        </div>
       </div>
       
       {!isSoldOut ? (

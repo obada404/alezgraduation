@@ -7,6 +7,7 @@ import { addToCart } from "../../api/cart";
 import { getToken } from "../../api/client";
 import { useMobileLogin } from "../../contexts/MobileLoginContext";
 import Spinner from "../Helpers/Spinner";
+import PriceDisplay from "../Helpers/PriceDisplay";
 
 const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo/jpeg`;
 
@@ -73,6 +74,8 @@ export default function SingleProductPage() {
         quantity,
         size: selectedSize || null,
       });
+      // Dispatch event to update cart count in header
+      window.dispatchEvent(new Event('cartUpdated'));
     } catch (err) {
       let errorMsg = err.message || "حدث خطآ،جاري المتابعة";
       // Ignore quantity-related errors - allow orders to continue
@@ -111,10 +114,9 @@ export default function SingleProductPage() {
     return null;
   }
 
-  const price =
-    product?.sizes?.find((s) => s.size === selectedSize)?.price ||
-    product?.sizes?.[0]?.price ||
-    0;
+  const selectedSizeData = product?.sizes?.find((s) => s.size === selectedSize) || product?.sizes?.[0];
+  const priceAfterDiscount = selectedSizeData?.priceAfterDiscount || selectedSizeData?.price || 0;
+  const priceBeforeDiscount = selectedSizeData?.priceBeforeDiscount;
 
   const mainImage = selectedImage || product?.images?.[0]?.url || LOGO_URL;
   const isSoldOut = product?.soldOut || product?.isSoldOut || false;
@@ -169,7 +171,10 @@ export default function SingleProductPage() {
             <h1 className="text-2xl font-bold text-qblack">
               {product?.title || product?.name}
             </h1>
-            <p className="text-lg font-semibold text-qblack">₪ {price}</p>
+            <PriceDisplay 
+              priceAfterDiscount={priceAfterDiscount}
+              priceBeforeDiscount={priceBeforeDiscount}
+            />
             <p className="text-qgray">{product?.description}</p>
 
             {product?.sizes?.length ? (
@@ -194,7 +199,14 @@ export default function SingleProductPage() {
                             : "bg-gray-50 text-qgray hover:bg-gray-200 hover:text-qblack shadow-sm hover:shadow-lg transform hover:scale-105 active:scale-95 border border-gray-200"
                         }`}
                       >
-                        {s.size} (₪ {s.price})
+                        <span className="flex items-center gap-2">
+                          <span>{s.size}</span>
+                          <span className="h-4 w-px bg-gray-400"></span>
+                          <PriceDisplay 
+                            priceAfterDiscount={s.priceAfterDiscount || s.price}
+                            priceBeforeDiscount={s.priceBeforeDiscount}
+                          />
+                        </span>
                       </button>
                     );
                   })}

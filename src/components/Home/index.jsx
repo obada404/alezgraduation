@@ -71,10 +71,14 @@ function PromotionCard({ promotion }) {
   );
 }
 
+import PriceDisplay from "../Helpers/PriceDisplay";
+
 function ProductCard({ product, onShowDetails }) {
   const { t } = useTranslation();
   const imageUrl = product?.images?.[0]?.url;
-  const price = product?.sizes?.[0]?.price || 0;
+  const firstSize = product?.sizes?.[0];
+  const priceAfterDiscount = firstSize?.priceAfterDiscount || firstSize?.price || 0;
+  const priceBeforeDiscount = firstSize?.priceBeforeDiscount;
   const isSoldOut = product?.soldOut || product?.isSoldOut || false;
   
   return (
@@ -107,7 +111,10 @@ function ProductCard({ product, onShowDetails }) {
           {product?.title || product?.name}
         </h3>
       </div>
-      <p className="text-lg font-bold text-qblack">₪ {price}</p>
+      <PriceDisplay 
+        priceAfterDiscount={priceAfterDiscount}
+        priceBeforeDiscount={priceBeforeDiscount}
+      />
       {!isSoldOut && (
         <button
           onClick={() => onShowDetails(product)}
@@ -194,14 +201,6 @@ export default function Home() {
             >
               {t("common.viewAllProducts")}
             </button>
-            {!getToken() && (
-              <button
-                onClick={() => navigate("/login")}
-                className="h-[42px] px-4 rounded border border-qgray-border text-qblack font-semibold"
-              >
-                {t("common.login")}
-              </button>
-            )}
           </div>
         </div>
 

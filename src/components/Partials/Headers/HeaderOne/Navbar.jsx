@@ -1,79 +1,59 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { useTranslation } from "react-i18next";
 import ThinBag from "../../../Helpers/icons/ThinBag";
-import ThinPeople from "../../../Helpers/icons/ThinPeople";
 import Facebook from "../../../Helpers/icons/Facebook";
 import Instagram from "../../../Helpers/icons/Instagram";
 import WhatsApp from "../../../Helpers/icons/WhatsApp";
-import { getToken, clearToken, getIsAdmin } from "../../../../api/client";
+import { getToken, clearToken } from "../../../../api/client";
 import { fetchCart } from "../../../../api/cart";
 
 export default function Navbar({ className, type }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [accountDropdown, setAccountDropdown] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [cartItemsCount, setCartItemsCount] = useState(0);
-  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check if user is logged in and update on navigation
-  useEffect(() => {
-    const checkLogin = () => {
-      const token = getToken();
-      setIsLoggedIn(!!token);
-      setIsAdmin(getIsAdmin());
-    };
-    checkLogin();
-    // Check periodically for token changes (in case login happens in another tab/component)
-    const interval = setInterval(checkLogin, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
-  // Fetch cart items count - only when location changes, not on interval
-  useEffect(() => {
-    const loadCartCount = async () => {
-      const token = getToken();
-      if (token) {
-        try {
-          const cartData = await fetchCart();
-          if (cartData && cartData.items) {
-            const totalItems = cartData.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
-            setCartItemsCount(totalItems);
-          } else {
-            setCartItemsCount(0);
-          }
-          // If API call succeeds, user is logged in
-          setIsLoggedIn(true);
-        } catch (err) {
-          // If error is 401 (Unauthorized), token is invalid or expired
-          if (err.message && (err.message.includes("401") || err.message.includes("Unauthorized"))) {
-            clearToken();
-            setIsLoggedIn(false);
-            setIsAdmin(false);
-          }
+  // Function to load cart count
+  const loadCartCount = useCallback(async () => {
+    const token = getToken();
+    if (token) {
+      try {
+        const cartData = await fetchCart();
+        if (cartData && cartData.items) {
+          const totalItems = cartData.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+          setCartItemsCount(totalItems);
+        } else {
           setCartItemsCount(0);
         }
-      } else {
-        setIsLoggedIn(false);
+      } catch (err) {
+        // If error is 401 (Unauthorized), token is invalid or expired
+        if (err.message && (err.message.includes("401") || err.message.includes("Unauthorized"))) {
+          clearToken();
+        }
         setCartItemsCount(0);
       }
-    };
+    } else {
+      setCartItemsCount(0);
+    }
+  }, []);
+
+  // Fetch cart items count - when location changes
+  useEffect(() => {
     loadCartCount();
-    // Only refresh when location changes, not on interval to avoid multiple API calls
-  }, [location]);
+  }, [location, loadCartCount]);
+
+  // Listen for cart update events
+  useEffect(() => {
+    window.addEventListener('cartUpdated', loadCartCount);
+    return () => {
+      window.removeEventListener('cartUpdated', loadCartCount);
+    };
+  }, [loadCartCount]);
 
 
-  const handleLogout = () => {
-    clearToken();
-    setIsLoggedIn(false);
-    setIsAdmin(false);
-    setAccountDropdown(false);
-    navigate("/");
-    window.location.reload(); // Refresh to update all components
-  };
 
 
   return (
@@ -144,16 +124,6 @@ export default function Navbar({ className, type }) {
                       {t("nav.location")}
                     </Link>
                   </li>
-                  {isAdmin && (
-                    <li>
-                      <Link
-                        to="/admin-dashboard"
-                        className={`text-sm font-600 transition-all duration-300 relative group px-1 py-1 rounded-md text-white hover:bg-white/20`}
-                      >
-                        لوحة التحكم
-                      </Link>
-                    </li>
-                  )}
                 </ul>
               </div>
             </div>
@@ -161,7 +131,7 @@ export default function Navbar({ className, type }) {
               {/* Social Media Icons */}
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                 <a
-                  href="https://www.facebook.com"
+                  href="https://www.facebook.com/people/%D8%A7%D9%84%D8%B9%D8%B2-%D9%84%D8%A3%D8%B1%D9%88%D8%A7%D8%A8-%D9%88%D8%B7%D9%88%D8%A7%D9%82%D9%8A-%D8%A7%D9%84%D8%AA%D8%AE%D8%B1%D8%AC/100057347534627/?mibextid=wwXIfr&rdid=KT4SsD8TdujnuifW&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1FJFRMBu2X%2F%3Fmibextid%3DwwXIfr"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 text-white bg-gray-500/30 hover:bg-white/20"
@@ -201,47 +171,6 @@ export default function Navbar({ className, type }) {
                     )}
                   </span>
                 </Link>
-              </div>
-              <div className="account relative flex items-center">
-                <button
-                  onClick={() => setAccountDropdown(!accountDropdown)}
-                  className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-500/30 text-white transition-all duration-300 hover:bg-white/20"
-                  type="button"
-                >
-                  <ThinPeople className="text-white fill-current" />
-                </button>
-                {accountDropdown && (
-                  <>
-                    <div
-                      className="fixed top-0 left-0 w-full h-full -z-10"
-                      onClick={() => setAccountDropdown(false)}
-                    ></div>
-                    <div className="absolute right-0 top-full mt-2 w-[180px] bg-white border border-qgray-border rounded shadow-lg z-50">
-                      <ul className="py-2">
-                        {isLoggedIn ? (
-                          <li>
-                            <button
-                              onClick={handleLogout}
-                              className="w-full text-right px-4 py-2 text-sm text-qblack hover:bg-qyellow hover:text-white transition-colors"
-                            >
-                              {t("nav.logout")}
-                            </button>
-                          </li>
-                        ) : (
-                          <li>
-                            <Link
-                              to="/login"
-                              onClick={() => setAccountDropdown(false)}
-                              className="block w-full text-right px-4 py-2 text-sm text-qblack hover:bg-qyellow hover:text-white transition-colors"
-                            >
-                              {t("nav.login")}
-                            </Link>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  </>
-                )}
               </div>
             </div>
           </div>

@@ -14,7 +14,7 @@ export default function Layout({ children, childrenClasses }) {
   
   return (
     <>
-      <Drawer open={drawer} action={() => setDrawer(!drawer)} />
+      <Drawer open={drawer} action={() => setDrawer(!drawer)} type={1} />
       <div className="w-full overflow-x-hidden">
         <Header drawerAction={() => setDrawer(!drawer)} showNewsBar={showNewsBar} />
         <div className={`w-full  ${childrenClasses || "pt-[30px] pb-[60px]"}`}>

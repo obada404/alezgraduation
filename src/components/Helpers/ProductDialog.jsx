@@ -5,6 +5,7 @@ import { getToken } from "../../api/client";
 import { useMobileLogin } from "../../contexts/MobileLoginContext";
 import Spinner from "./Spinner";
 import { useState } from "react";
+import PriceDisplay from "./PriceDisplay";
 
 const LOGO_URL = `${import.meta.env.VITE_PUBLIC_URL || ''}/assets/images/logo.jpeg`;
 
@@ -14,6 +15,7 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
   const [adding, setAdding] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (isOpen && product) {
@@ -24,6 +26,8 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
       if (product.images && product.images.length > 0) {
         setSelectedImage(product.images[0]);
       }
+      // Reset quantity to 1 when dialog opens
+      setQuantity(1);
       // Prevent body scroll when dialog is open
       document.body.style.overflow = "hidden";
     } else {
@@ -49,9 +53,11 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
       setAdding(true);
       await addToCart({
         productId: product.id,
-        quantity: 1,
+        quantity: quantity > 0 ? quantity : 1,
         size: selectedSize?.size || null,
       });
+      // Dispatch event to update cart count in header
+      window.dispatchEvent(new Event('cartUpdated'));
       if (onAddToCart) {
         onAddToCart();
       }
@@ -68,7 +74,9 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
     }
   };
 
-  const price = selectedSize?.price || product?.sizes?.[0]?.price || 0;
+  const selectedSizeData = selectedSize || product?.sizes?.[0];
+  const priceAfterDiscount = selectedSizeData?.priceAfterDiscount || selectedSizeData?.price || 0;
+  const priceBeforeDiscount = selectedSizeData?.priceBeforeDiscount;
   const isSoldOut = product?.soldOut || product?.isSoldOut || false;
   const currentImage = selectedImage?.url || product?.images?.[0]?.url || LOGO_URL;
 
@@ -150,9 +158,13 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
                 <h3 className="text-2xl font-bold text-qblack mb-4">
                   {product?.title || product?.name}
                 </h3>
-                <p className="text-3xl font-bold text-qyellow mb-4">
-                  ₪ {price}
-                </p>
+                <div className="mb-4">
+                  <PriceDisplay 
+                    priceAfterDiscount={priceAfterDiscount}
+                    priceBeforeDiscount={priceBeforeDiscount}
+                    className="text-3xl"
+                  />
+                </div>
               </div>
 
               {/* Description */}
@@ -196,12 +208,59 @@ export default function ProductDialog({ product, isOpen, onClose, onAddToCart })
                             : "border-gray-300 text-qblack hover:border-[#D4AF37]"
                         }`}
                       >
-                        {size.size} - ₪ {size.price}
+                        <span className="flex items-center gap-2">
+                          <span>{size.size}</span>
+                          <span className="h-4 w-px bg-gray-400"></span>
+                          <PriceDisplay 
+                            priceAfterDiscount={size.priceAfterDiscount || size.price}
+                            priceBeforeDiscount={size.priceBeforeDiscount}
+                          />
+                        </span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* Quantity Input */}
+              <div className="flex items-center space-x-3 space-x-reverse">
+                <label className="text-sm font-semibold text-qblack">الكمية</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                    className="w-8 h-8 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  </button>
+                  <input
+                    type="number"
+                    min="1"
+                    value={quantity > 0 ? quantity : 1}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setQuantity(val >= 1 ? val : 1);
+                    }}
+                    onBlur={(e) => {
+                      if (!e.target.value || Number(e.target.value) < 1) {
+                        setQuantity(1);
+                      }
+                    }}
+                    className="w-16 h-10 border-2 border-gray-300 rounded-lg px-2 text-center text-sm font-semibold text-qblack focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all duration-300 bg-white"
+                    placeholder="1"
+                  />
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="w-8 h-8 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all duration-300"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
 
               {/* Add to Cart Button */}
               <div className="pt-4">
