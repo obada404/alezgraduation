@@ -6,7 +6,7 @@ import ThinBag from "../../../Helpers/icons/ThinBag";
 import Facebook from "../../../Helpers/icons/Facebook";
 import Instagram from "../../../Helpers/icons/Instagram";
 import WhatsApp from "../../../Helpers/icons/WhatsApp";
-import { getToken, clearToken } from "../../../../api/client";
+import { getToken, clearToken, getIsAdmin } from "../../../../api/client";
 import { fetchCart } from "../../../../api/cart";
 
 export default function Navbar({ className, type }) {
@@ -14,6 +14,7 @@ export default function Navbar({ className, type }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [cartItemsCount, setCartItemsCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
 
 
   // Function to load cart count
@@ -39,6 +40,16 @@ export default function Navbar({ className, type }) {
       setCartItemsCount(0);
     }
   }, []);
+
+  // Check admin status
+  useEffect(() => {
+    setIsAdmin(getIsAdmin());
+    // Check periodically in case admin status changes
+    const interval = setInterval(() => {
+      setIsAdmin(getIsAdmin());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [location]);
 
   // Fetch cart items count - when location changes
   useEffect(() => {
@@ -124,6 +135,16 @@ export default function Navbar({ className, type }) {
                       {t("nav.location")}
                     </Link>
                   </li>
+                  {isAdmin && (
+                    <li>
+                      <Link
+                        to="/admin-dashboard"
+                        className={`text-sm font-600 transition-all duration-300 relative group px-1 py-2 rounded-md text-white hover:bg-white/20`}
+                      >
+                        {t("nav.adminDashboard")}
+                      </Link>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>
